@@ -18,7 +18,7 @@
     "dev:host": "vite --host",
     "vite:start": "vite",
     "vite:build": "vite build",
-    "deploy": "git pull && npm install --force && npm run build"
+    "deploy": "git pull && yarn rm:build"
   },
   "dependencies": {
     "@ant-design/icons": "^6.0.0",
