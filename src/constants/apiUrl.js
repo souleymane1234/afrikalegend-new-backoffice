@@ -1,12 +1,5 @@
-// Config DEV
-const base_url = 'http://localhost:8080/api/v1/admin'; // 'https://comici.loca.lt/api/admin':'https://bcomissi.shouz.network/api/admin';
-const base_url_asset = 'http://localhost:8080/uploads'; // 'https://comici.loca.lt/images':'https://bcomissi.shouz.network/images';
-const base_url_frontend = 'http://localhost:3000';
-
-// Config PROD
-// const base_url = 'https://api.icmemployment.net/api/v1/admin';
-// const base_url_asset = 'https://api.icmemployment.net/uploads';
-// const base_url_frontend = 'https://www.icmemployment.net';
+const base_url = import.meta.env.VITE_BASE_URL;
+const base_url_asset = import.meta.env.VITE_BASE_URL_ASSET;
 
 export const apiUrl =  {
     authentication: `${base_url}/signin`,
@@ -69,5 +62,5 @@ export const apiUrlAsset =  {
 }
 
 export const apiUrlConsulteRessource =  {
-    viewJob: (_id) => `${base_url_frontend}/job/${_id}?overview=admin`,
+    viewJob: (_id) => `${base_url}/job/${_id}?overview=admin`,
 }
