@@ -1,0 +1,4 @@
+export const RoleEnum = {
+    SUPER_ADMIN: 'SUPER_ADMIN',
+    ADMIN_PARTENAIRE : 'ADMIN_PARTENAIRE',
+}
