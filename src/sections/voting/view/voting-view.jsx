@@ -203,7 +203,7 @@ export default function VotingView() {
           <Grid container spacing={2} sx={{width: '100%'}}>
 
             {Array.from(new Array(4)).map((item, index) => (
-              <Grid key={`skeleton-${index}`} item xs={12} sm={6} md={6}>
+              <Grid key={`skeleton-${index}`} size={{xs:12, sm:6, md:6}}>
                 <Stack direction="row" alignItems="flex-start" justifyContent="flex-start">
                   <Skeleton variant="rectangular" sx={{width: '40%' , height: 160, borderRadius: 1, marginRight: 2}} animation='wave' />
                   <Skeleton variant="rectangular" sx={{width: '50%' , height: 100, borderRadius: 1}} animation='wave' />

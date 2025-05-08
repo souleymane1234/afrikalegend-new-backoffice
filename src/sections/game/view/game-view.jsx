@@ -353,7 +353,7 @@ export default function GameView() {
         {
         isLoadingGame ?
         (Array.from(new Array(9))).map((item, index) => (
-          <Grid item key={`skeleton-${index}`} xs={12} sm={4} md={3}>
+          <Grid key={`skeleton-${index}`} size={{xs: 12, sm: 4, md: 3}}>
             <Card sx={{width: '100%', height: 400, marginBottom: 2}} >
               <Skeleton variant="rectangular" width="100%" height="100%" animation="pulse" />
             </Card>

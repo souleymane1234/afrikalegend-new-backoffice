@@ -3,13 +3,12 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 import checker from 'vite-plugin-checker';
 
-// ----------------------------------------------------------------------
-
 export default defineConfig({
   plugins: [
     react({
+      jsxImportSource: '@emotion/react',
       swc: {
-        minify: false, // Désactive la minification SWC
+        minify: false,
       }
     }),
     checker({
@@ -19,21 +18,19 @@ export default defineConfig({
     }),
   ],
   resolve: {
-    alias: [
-      {
-        find: /^~(.+)/,
-        replacement: path.join(process.cwd(), 'node_modules/$1'),
-      },
-      {
-        find: /^src(.+)/,
-        replacement: path.join(process.cwd(), 'src/$1'),
-      },
-    ],
+    alias: {
+      '~': path.resolve(process.cwd(), 'node_modules'),
+      'src': path.resolve(process.cwd(), 'src'),
+    },
   },
   server: {
     port: 3030,
+    host: true, // ajouté pour le dev:host
   },
   preview: {
     port: 3030,
+  },
+  optimizeDeps: {
+    include: ['@emotion/react', '@emotion/styled'],
   },
 });

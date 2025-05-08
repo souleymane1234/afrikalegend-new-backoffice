@@ -97,7 +97,7 @@ export default function VotingCompetion({ post, sx, admin }) {
           }}
         >
           <Grid container spacing={2} padding={2} sx={{height: "100%"}}>
-            <Grid item xs={6} sm={6} md={6} sx={{height: "100%"}}>
+            <Grid size={{xs:6, sm:6, md:6}} sx={{height: "100%"}}>
               <Stack direction="row" alignItems="center" justifyContent="flex-start" mb={5}>
                 <Avatar src={`${apiUrlAsset.avatars}/${admin.gravatars}`} alt={admin.gravatars} />
                 <Typography color="white" variant="h4" sx={{marginLeft: 2}}>{title.toString().toLocaleUpperCase()}</Typography>
@@ -113,7 +113,7 @@ export default function VotingCompetion({ post, sx, admin }) {
               }
               
             </Grid>
-            <Grid item xs={6} sm={6} md={6} sx={{justifyContent: 'flex-end', alignItems: 'center', display:'flex' ,height: "100%"}}>
+            <Grid size={{xs:6, sm:6, md:6}} sx={{justifyContent: 'flex-end', alignItems: 'center', display:'flex' ,height: "100%"}}>
               {renderMiss}
             </Grid>
 

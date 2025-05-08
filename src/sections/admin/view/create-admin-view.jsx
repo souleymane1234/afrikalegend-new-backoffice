@@ -206,7 +206,7 @@ export default function CreateAdminView() {
                   {departements.map((departementItem) => (<MenuItem key={departementItem.id} value={departementItem.id}>{departementItem.nom_departement.trim().toLocaleUpperCase()}</MenuItem>))}
                 </Select>
               </Grid>
-              <Grid item xs={12} sm={5} md={5}>
+              <Grid size={{xs:12, sm:5, md:5}}>
                 <Button variant="text" onClick={handleToogleDialogCreateDepartement}>Departement introuvable ?</Button>
               </Grid>
             </Grid>

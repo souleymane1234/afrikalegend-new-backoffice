@@ -744,8 +744,8 @@ export default class ConsumApi {
 }
 
 const updateClientInfo = (data) => {
-  const { fullName: nom_complet, email: emailData, access_token, logo, role } = data.client;
-  const adminData = { nom_complet, email: emailData, logo, role };
+  const { full_name: nom_complet, email: emailData, access_token, logo, role } = data.client;
+  const adminData = { nom_complet, email: emailData, logo, role};
   useAdminStore.getState().setAdmin(adminData);
   AdminStorage.saveInfoAdmin(adminData);
   AdminStorage.saveTokenAdmin(access_token);

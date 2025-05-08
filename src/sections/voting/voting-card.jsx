@@ -81,9 +81,9 @@ export default function VotingCard({ post, index, admin }) {
   
 
   return (
-    <Grid item xs={12} sm={6} md={6}>
+    <Grid size={{xs:12, sm:6, md:6}}>
       <Grid container>
-        <Grid item xs={5} sm={5} md={5} sx={{
+        <Grid size={{xs:5, sm:5, md:5}} sx={{
             position: 'relative',
             cursor: 'pointer'
           }}
@@ -93,7 +93,7 @@ export default function VotingCard({ post, index, admin }) {
           >
           {renderCover}
         </Grid>
-        <Grid item xs={6} sm={6} md={6}>
+        <Grid size={{xs:6, sm:6, md:6}}>
           <Card sx={{width: '100%', marginBottom: 1, cursor: 'pointer'}} onClick={()=> {
             router.push(routesName.setDetailFormation(id));
           }} >

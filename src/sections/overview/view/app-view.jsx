@@ -77,7 +77,7 @@ export default function AppView() {
 
       {!isFetching && (
       <Grid container spacing={1}>
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{xs:12, sm:6, md:3}}>
           <AppWidgetSummary
             title="Offres d'emploi en attente"
             total={totalJobOfferPending}
@@ -86,7 +86,7 @@ export default function AppView() {
           />
         </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{xs:12, sm:6, md:3}}>
           <AppWidgetSummary
             title="Candidature acceptées"
             total={totalCandidatureAccepted}
@@ -95,7 +95,7 @@ export default function AppView() {
           />
         </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{xs:12, sm:6, md:3}}>
           <AppWidgetSummary
             title="Comptes entreprises"
             total={totalRecruiter}
@@ -104,7 +104,7 @@ export default function AppView() {
           />
         </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
+        <Grid size={{xs:12, sm:6, md:3}}>
           <AppWidgetSummary
             title="Comptes particuliers"
             total={totalParticulier}
@@ -113,7 +113,7 @@ export default function AppView() {
           />
         </Grid>
 
-        <Grid item xs={12} md={6} lg={8}>
+        <Grid size={{xs:12, md:6, lg:8}}>
           <AppWebsiteVisits
             title="Rapport offre/demande/expension sur les 10 derniers jours"
             subheader="il s'agit ici d'un ration entre l'offre et la demande ainsi que les nouvelles adhésions"
@@ -143,7 +143,7 @@ export default function AppView() {
           />
         </Grid>
 
-        <Grid item xs={12} md={6} lg={4}>
+        <Grid size={{xs:12, md:6, lg:4}}>
           <AppCurrentVisits
             title="Rapport type d'emploi annuel"
             subheader={`Statistique global sur les types d'emploi crées durant ${new Date().getFullYear()}`}
@@ -153,7 +153,7 @@ export default function AppView() {
           />
         </Grid>
 
-        <Grid item xs={12} md={6} lg={8}>
+        <Grid size={{xs:12, md:6, lg:8}}>
           <AppConversionRates
             title="Classement des entreprises qui font le plus d'offres"
             subheader="(Top 10)"
@@ -171,7 +171,7 @@ export default function AppView() {
           />
         </Grid>
 
-        <Grid item xs={12} md={6} lg={4}>
+        <Grid size={{xs:12, md:6, lg:4}}>
           <AppCurrentVisits
             title="Rapport qualité embauche annuel"
             subheader={`Candidature acceptées/rejetté/en attente pour ${new Date().getFullYear()}`}
@@ -181,7 +181,7 @@ export default function AppView() {
           />
         </Grid>
 
-        <Grid item xs={12} md={6} lg={8}>
+        <Grid size={{xs:12, md:6, lg:8}}>
           <AppNewsUpdate
             title="Dernières offres en ligne"
             list={lastSixJobOffers.map((job) => ({
@@ -194,7 +194,7 @@ export default function AppView() {
           />
         </Grid>
 
-        <Grid item xs={12} md={6} lg={4}>
+        <Grid size={{xs:12, md:6, lg:4}}>
           <AppOrderTimeline
             title="Dernières formations en ligne"
             list={lastSixJTrainings.map((training, index) => ({
@@ -270,7 +270,7 @@ export default function AppView() {
           )
           )}
 
-          <Grid item xs={12} md={6} lg={8}>
+          <Grid size={{xs:12, md:6, lg:8}}>
             <Card sx={{ padding: 1}}>
               <Skeleton width="30%" variant="text" sx={{ fontSize: '1rem' }} />
               <Skeleton width="60%" variant="text" sx={{ fontSize: '1em' }} />
@@ -287,7 +287,7 @@ export default function AppView() {
               </Grid>
             </Card>
           </Grid>
-          <Grid item xs={12} md={6} lg={4}>
+          <Grid size={{xs:12, md:6, lg:4}}>
             <Card sx={{ padding: 1, height: 540, pt: 4}}>
                 <Skeleton width="30%" variant="text" sx={{ fontSize: '1rem' }} />
                 
@@ -299,7 +299,7 @@ export default function AppView() {
           </Grid>
 
 
-          <Grid item xs={12} md={6} lg={8}>
+          <Grid size={{xs:12, md:6, lg:8}}>
             <Card sx={{ padding: 1}}>
               <Skeleton width="30%" variant="text" sx={{ fontSize: '1rem' }} />
               <Skeleton width="60%" variant="text" sx={{ fontSize: '1em' }} />
@@ -308,7 +308,7 @@ export default function AppView() {
               </Grid>
             </Card>
           </Grid>
-          <Grid item xs={12} md={6} lg={4}>
+          <Grid size={{xs:12, md:6, lg:4}}>
             <Card sx={{ padding: 1, height: 490, pt: 3}}>
                 <Skeleton width="30%" variant="text" sx={{ fontSize: '1rem' }} />
                 

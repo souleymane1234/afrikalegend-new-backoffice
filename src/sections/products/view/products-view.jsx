@@ -151,16 +151,16 @@ export default function ProductsView() {
       <Grid container spacing={1}>
         {isFetching ?
         (Array.from(new Array(7))).map((product, index) => (
-          <Grid item key={`skeleton-${index}`} xs={12} sm={6} md={3}>
+          <Grid key={`skeleton-${index}`} size={{xs: 12, sm: 6, md: 3}}>
             <Skeleton variant="rectangular" width="100%" height={300} animation="pulse" />
           </Grid>
         ))
         :
           <Grid container spacing={1}>
-            <Grid item sm={6} xs={12} md={4}>
+            <Grid size={{xs:12, sm:6, md:4}}>
             <Image src={`${apiUrlAsset.coverFormation}/${formation?.cover}`}/>
             </Grid>
-            <Grid item sm={6} xs={12} md={8}>
+            <Grid size={{xs:12, sm:6, md:8}}>
               <Timeline  sx={{
                 m: 1,
                 p: 0,
@@ -205,10 +205,10 @@ export default function ProductsView() {
                 </Stack>
               </Box>
             </Grid>
-            <Grid item sm={12} xs={12} md={12}>
+            <Grid size={{xs:12, sm:12, md:12}}>
             <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(formation?.description) }} />
             </Grid>
-            <Grid item sm={12} xs={12} md={12}>
+            <Grid size={{xs:12, sm:12, md:12}}>
             <Typography variant='subtitle1' color='text.primary'>
                     Liste des participants
                   </Typography>

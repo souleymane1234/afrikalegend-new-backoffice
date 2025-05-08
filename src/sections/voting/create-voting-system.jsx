@@ -322,7 +322,7 @@ export default function CreateVotingSystem(props) {
 
 
   return (
-    <Grid item xs={12} sm={6} md={6}>
+    <Grid size={{xs:12, sm:6, md:6}}>
       <Grid container>
         {contextHolder}
         <Stack sx={{ width: '100%' }} spacing={4}>
@@ -347,7 +347,7 @@ export default function CreateVotingSystem(props) {
             >
               <Stack spacing={3} sx={{width: '100%'}}>
                 <Grid container spacing={2}>
-                  <Grid item xs={6}>
+                  <Grid size={{xs:6}}>
                     <Stack direction="row" alignItems="center" justifyContent="center" mb={1} sx={{width: '100%'}}>
                       <ImgCrop showGrid rotationSlider aspectSlider showReset>
                         <Upload
@@ -370,7 +370,7 @@ export default function CreateVotingSystem(props) {
                     </Stack>
                   </Grid>
 
-                  <Grid item xs={6}>
+                  <Grid size={{xs:6}}>
                     <Stack direction="row" alignItems="center" justifyContent="center" mb={1} sx={{width: '100%'}}>
                         <Upload
                           listType='picture'
@@ -488,11 +488,11 @@ export default function CreateVotingSystem(props) {
                 placeholder={["Date de début", "Date de fin"]}
                 />
                 <Grid container spacing={2}>
-                <Grid item xs={4} >
+                <Grid size={{xs:4}} >
                     <TextField fullWidth  value={location} onChange={(event)=> {changeLocation(event.target.value)}} label="Lieu de l'évènement" />
                     
                   </Grid>
-                  <Grid item xs={4} >
+                  <Grid size={{xs:4}} >
                     <TextField
                       fullWidth
                       value={priceVote} 
@@ -502,7 +502,7 @@ export default function CreateVotingSystem(props) {
                       onChange={(event)=> {setPriceVote(event.target.value)}}
                     />
                   </Grid>
-                  <Grid item xs={4}>
+                  <Grid size={{xs:4}}>
                     <TextField
                       id="outlined-select-currency"
                       select
@@ -519,7 +519,7 @@ export default function CreateVotingSystem(props) {
                       ))}
                     </TextField>
                   </Grid>
-                  <Grid item xs={12}>
+                  <Grid size={{xs:12}}>
                   <Form
                         form={form}
                         name="control-hooks"
