@@ -68,7 +68,8 @@ export default function JobOfferView() {
     url_generate_otp: '',
     url_billing: '',
     isMobileMoney: false,
-    });
+  });
+  const [pricingChoice, changePricingChoice] = useState([]);
   const [logo, changeLogo] = useState('');
   const [numberTel, changeNumberTel] = useState('');
   const [email, changeEmail] = useState('');
@@ -201,9 +202,9 @@ export default function JobOfferView() {
       }
       {
           role === RoleEnum.ADMIN_PARTENAIRE && (
-            <Menu.Item key={`updatePricingItem${_id}`} onClick={() => handleActionJob(_id, true)}>
+            <Menu.Item key={`updatePricingItem${_id}`} onClick={() => handleActionJob(_id, forfaits)}>
                 <Flex gap='middle' align='center' justify='space-between'>
-            Modifier les forfaits <RequestQuoteTwoToneIcon sx={{color: yellow[500]}} />
+            {forfaits.length > 0 ? 'Modifier':'Ajouter'} les forfaits <RequestQuoteTwoToneIcon sx={{color: yellow[500]}} />
                 </Flex>
             </Menu.Item>
           )
@@ -235,6 +236,15 @@ export default function JobOfferView() {
       setIsMobileMoney(config.isMobileMoney ? 'oui':'non')
     }
     changeConfigPartnerairChoice((oldConfig) => ({...oldConfig, admin_id: id}));
+    handleToogleDialogCreateOrUpdateConfig();
+  }
+
+  const handleActionEditPricing = async (adminId, forfaits,config) => {
+    if (forfaits.length > 0) {
+      changePricingChoice(forfaits.map(({id, periode, type, price, freemium, durationForfait}) => ({id, periode, type, price, freemium, durationForfait})));
+      setIsMobileMoney(config.isMobileMoney ? 'oui':'non')
+    }
+    changeConfigPartnerairChoice((oldConfig) => ({...oldConfig, admin_id: adminId}));
     handleToogleDialogCreateOrUpdateConfig();
   }
   

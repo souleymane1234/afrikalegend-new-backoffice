@@ -322,9 +322,9 @@ export default class ConsumApi {
     }
   }
 
-  static async createGame({ title, description, videoCover, covers, isPortrait, url }) {
+  static async createGame({ nameProfil, base64Profil, title, description, videoCover, covers, isPortrait, url, categories }) {
     const token = AdminStorage.getTokenAdmin();
-    const body = { title, description, videoCover, covers, isPortrait, url };
+    const body = { nameProfil, base64Profil, title, description, videoCover, covers, isPortrait, url, categories };
 
     try {
       const response = await this.api.post(apiUrl.games, body, {

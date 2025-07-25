@@ -25,8 +25,7 @@ import Iconify from 'src/components/iconify';
 
 export default function PostCard({ game, index }) {
   
-  const { covers, title, ratings, id, isActive, categories } = game;
-  console.log(`${apiUrlAsset.games}/${covers[0].imageUrl}`);
+  const { title, ratings, id, isActive, categories, profilPicture } = game;
   const router = useRouter();
 
 
@@ -85,7 +84,7 @@ export default function PostCard({ game, index }) {
     <Box
       component="img"
       alt={title}
-      src={`${apiUrlAsset.games}/${covers[0].imageUrl}`}
+      src={`${apiUrlAsset.games}/${profilPicture}`}
       sx={{
         top: 0,
         width: 1,

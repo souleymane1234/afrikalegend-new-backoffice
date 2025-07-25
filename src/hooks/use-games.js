@@ -33,9 +33,9 @@ export const useCategoriesGames = () => useQuery({
 });
 
 // --- Partie POST pour créer
-const createGame = async ({ title, description, videoCover, covers, isPortrait, url }) => {
+const createGame = async ({ nameProfil, base64Profil, title, description, videoCover, covers, isPortrait, url, categories }) => {
   try {
-    return await ConsumApi.createGame({ title, description, videoCover, covers: covers.reverse(), isPortrait, url });
+    return await ConsumApi.createGame({ nameProfil, base64Profil, title, description, videoCover, covers: covers.reverse(), isPortrait, url, categories });
   } catch (error) {
     throw new Error(error.message);
   }

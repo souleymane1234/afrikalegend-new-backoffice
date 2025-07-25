@@ -12,12 +12,12 @@ import ThemeProvider from 'src/theme';
 export default function App() {
   useScrollToTop();
   useEffect(() => {
-    loadData();
+    // loadData();
   }, [])
 
-  const loadData = () => {
-    console.log("DATA");
-  }
+  // const loadData = () => {
+  //   console.log("DATA");
+  // }
 
   return (
     <ThemeProvider>

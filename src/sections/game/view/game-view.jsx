@@ -67,12 +67,15 @@ export default function GameView() {
   const theme = useTheme();
   const [messageApi, contextMessageHolder] = message.useMessage();
   const [fileList, setFileList] = useState([]);
+  const [fileListProfil, setFileListProfil] = useState([]);
   const [fileListCategory, setFileListCategory] = useState([]);
   const [nameFileCategorieGameUploadBase64, changeNameFileCategorieGameUploadBase64] = useState('');
   const [base64CategorieGame, changeBase64CategorieGame] = useState('');
   const [nameCovers, changeNameCovers] = useState([]);
+  const [nameProfil, changeNameProfil] = useState([]);
   const [categorieGameChoice, changeCategorieGameChoice] = useState([]);
   const [base64Files, changeBase64Files] = useState([]);
+  const [base64Profil, changeBase64Profil] = useState([]);
   const [openCreateGame, setOpenCreateGame] = useState(false);
   const [isPortraitMode, setIsPortraitMode] = useState(false);
   const [title, changeTitle] = useState('');
@@ -153,9 +156,13 @@ export default function GameView() {
   )
 
   const createGames = async () => {
-  
+    console.log('categorieGameChoice', categorieGameChoice);
+    const categoriesFilter = categorieGameChoice.map(category => {
+      const categoryFound = categories.find(cat => cat.name === category);
+      return categoryFound ? categoryFound.id : null;
+    }).filter(id => id !== null);
     const isReady = [title.trim(), description.trim()].filter(verification => verification.length < 3).length === 0
-    if (isReady && fileList.length > 0) {
+    if (isReady && fileList.length > 0 && fileListProfil.length > 0 && categoriesFilter.length > 0) {
       const covers = nameCovers.map((fileName, index) => ({
           fileName,
           base64: base64Files[index],
@@ -163,12 +170,15 @@ export default function GameView() {
         messageApi.loading("Création en cours");
         createGameMutation(
           {
+            nameProfil: nameProfil[0],
+            base64Profil: base64Profil[0],
             title,
             description,
             covers,
             isPortrait: isPortraitMode,
             videoCover,
             url: urlGame,
+            categories: categoriesFilter,
           }, {
             onSuccess: async () => {
               handleToogleDialogCreateGames();
@@ -234,6 +244,17 @@ export default function GameView() {
     changeBase64Files(base64Results); // <-- Mise à jour des fichiers encodés
   }
   };
+  const onChangePictureProfil = async ({ fileList: newFileListProfil }) => {
+  setFileListProfil(newFileListProfil);
+  if (newFileListProfil.length > 0) {
+    const nameFile = newFileListProfil.map(file => `${file.uid}.${file.type.split('/')[1]}`);
+    changeNameProfil(nameFile); // <-- Mise à jour des noms
+
+    const promises = newFileListProfil.map(file => getSrcFromFile(file));
+    const base64Results = await Promise.all(promises);
+    changeBase64Profil(base64Results); // <-- Mise à jour des fichiers encodés
+  }
+  };
 
   const onChangeCategorieGameCover = ({ fileList: newFileList }) => {
     setFileListCategory(newFileList);
@@ -271,9 +292,6 @@ export default function GameView() {
   if (isErrorCategoryGame) {
     console.error("Erreur lors de la récupération des catégories jeux :", errorCategoryGame.message);
   }
-
-  console.log(categories, 'categories');
-
   return (
     <Container maxWidth='xl'>
       {contextMessageHolder}
@@ -409,7 +427,30 @@ export default function GameView() {
                     <FormHelperText>Vous pouvez en choisir plusieurs</FormHelperText>
                   </FormControl>}
                     
-                  </Box>
+              </Box>
+              <DialogContentText sx={{ my: 3 }}>
+                L&apos;icone du jeu
+              </DialogContentText>
+                  <Box component='div' sx={{ width: '100%' }}>
+                    <Upload
+                      listType="picture-card"
+                      accept='image/png, image/jpeg, image/webp'
+                      fileList={fileListProfil}
+                      beforeUpload={() => false}
+                      onChange={onChangePictureProfil}
+                      onPreview={onPreviewCompetitionCover}
+                      >
+                            {fileListProfil.length < 1 && (
+                            <Box component='div' sx={{width: 200, border: 'dashed #e0e0e0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection:'column', padding: 2, cursor: 'pointer'}}>
+                                <Iconify icon="openmoji:picture" />
+                              <span className="ant-upload-text">Charger l&apos;icone ici</span>
+                              
+                            </Box>
+                            )
+                      }
+                      </Upload>
+              </Box>
+              
               <DialogContentText sx={{ my: 3 }}>
                 Les photos de couvertures
               </DialogContentText>
@@ -419,12 +460,12 @@ export default function GameView() {
                       accept='image/png, image/jpeg, image/webp'
                       fileList={fileList}
                   multiple
-                  maxCount={3}
+                  maxCount={6}
                       beforeUpload={() => false}
                       onChange={onChangePictureCover}
                       onPreview={onPreviewCompetitionCover}
                       >
-                            {fileList.length < 3 && (
+                            {fileList.length < 6 && (
                             <Box component='div' sx={{width: 200, border: 'dashed #e0e0e0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection:'column', padding: 2, cursor: 'pointer'}}>
                                 <Iconify icon="openmoji:picture" />
                               <span className="ant-upload-text">Charger les images</span>

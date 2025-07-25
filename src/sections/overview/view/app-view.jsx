@@ -13,10 +13,10 @@ import ConsumApi from 'src/services_workers/consum_api';
 // import Iconify from 'src/components/iconify';
 
 // import AppTasks from '../app-tasks';
-import { apiUrlAsset } from 'src/constants/apiUrl';
+// import { apiUrlAsset } from 'src/constants/apiUrl';
 
-import AppNewsUpdate from '../app-news-update';
-import AppOrderTimeline from '../app-order-timeline';
+// import AppNewsUpdate from '../app-news-update';
+// import AppOrderTimeline from '../app-order-timeline';
 import AppCurrentVisits from '../app-current-visits';
 import AppWebsiteVisits from '../app-website-visits';
 import AppWidgetSummary from '../app-widget-summary';
@@ -30,35 +30,43 @@ export default function AppView() {
 
   // const [data, setData] = useState({});
   const [isFetching, setFetch] = useState(true);
-  const [lastSixJTrainings, setLastSixJTrainings] = useState([]);
-  const [lastSixJobOffers, setLastSixJobOffers] = useState([]);
-  const [annualRatioJobOffers, setAnnualRatioJobOffers] = useState([]);
-  const [annualReportQualityCandidature, setAnnualReportQualityCandidature] = useState([]);
+  // const [lastSixJTrainings, setLastSixJTrainings] = useState([]);
+  // const [lastSixJobOffers, setLastSixJobOffers] = useState([]);
+  const [annualSubscriptionPartners, setAnnualSubscriptionPartners] = useState([]);
+  // const [annualReportQualityCandidature, setAnnualReportQualityCandidature] = useState([]);
   const [dates, setDates] = useState([]);
-  const [totalCandidatureAccepteds, setTotalCandidatureAccepteds] = useState([]);
-  const [totalCandidatures, setTotalCandidatures] = useState([]);
-  const [totaljobOffers, setTotaljobOffers] = useState([]);
-  const [totalCandidatureAccepted, setTotalCandidatureAccepted] = useState(0);
-  const [totalJobOfferPending, setTotalJobOfferPending] = useState(0);
-  const [totalParticulier, setTotalParticulier] = useState(0);
-  const [totalRecruiter, setTotalRecruiter] = useState(0);
+  const [subscriptionWithoutFreemium, setSubscriptionWithoutFreemium] = useState([]);
+  const [subscriptionFreemium, setSubscriptionFreemium] = useState([]);
+  const [rankingGame, setRankingGame] = useState([]);
+  const [newUserAtMoment, setNewUserAtMoment] = useState([]);
+  const [totalGame, setTotalGame] = useState(0);
+  const [totalUser, setTotalUser] = useState(0);
+  const [totalPartners, setTotalPartners] = useState(0);
+  const [totalSubscriptionInPending, setTotalSubscriptionInPending] = useState(0);
 
   const loadData = useCallback(async () => {
     const info = await ConsumApi.getDashboard();
     if (info.success) {
       const { data } = info;
-      setAnnualRatioJobOffers(data.annualRatioJobOffers);
-      setAnnualReportQualityCandidature(data.annualReportQualityCandidature);
-      setLastSixJobOffers(data.LastSixJobOffers);
-      setLastSixJTrainings(data.LastSixJTrainings);
+      setAnnualSubscriptionPartners(data.annualSubscriptionPartners.map((item) => ({
+        label: item.name,
+        value: item.totalSubscriptionOfYears,
+      })));
+      // setAnnualReportQualityCandidature(data.annualReportQualityCandidature);
+      // setLastSixJobOffers(data.LastSixJobOffers);
+      // setLastSixJTrainings(data.LastSixJTrainings);
       setDates(data.dates);
-      setTotalCandidatureAccepteds(data.totalCandidatureAccepteds);
-      setTotalCandidatures(data.totalCandidatures);
-      setTotaljobOffers(data.totaljobOffers);
-      setTotalCandidatureAccepted(data.totalCandidatureAccepted);
-      setTotalJobOfferPending(data.totalJobOfferPending);
-      setTotalParticulier(data.totalParticulier);
-      setTotalRecruiter(data.totalRecruiter);
+      setSubscriptionWithoutFreemium(data.subscriptionWithoutFreemium);
+      setSubscriptionFreemium(data.subscriptionFreemium);
+      setNewUserAtMoment(data.newUserAtMoment);
+      setTotalGame(data.totalGame);
+      setTotalUser(data.totalUser);
+      setTotalPartners(data.totalPartners);
+      setRankingGame(data.rankingGame.map((item) => ({
+        label: item.game.title,
+        value: item.sessionCount,
+      })));
+      setTotalSubscriptionInPending(data.totalSubscriptionInPending);
     } else if (!info.success && info.message && info.message.includes("Session Expiré veuillez vous réconnecter")) {
       router.replace('/login');
     }
@@ -67,7 +75,7 @@ export default function AppView() {
 
   useEffect(() => {
     loadData();
-  }, [loadData]);
+  }, []);
 
   return (
     <Container maxWidth="xl">
@@ -79,8 +87,8 @@ export default function AppView() {
       <Grid container spacing={1}>
         <Grid size={{xs:12, sm:6, md:3}}>
           <AppWidgetSummary
-            title="Offres d'emploi en attente"
-            total={totalJobOfferPending}
+            title="Total de jeux"
+            total={totalGame}
             color="error"
             icon={<img alt="icon" src="/assets/icons/glass/ic_glass_message.png" />}
           />
@@ -88,8 +96,8 @@ export default function AppView() {
 
         <Grid size={{xs:12, sm:6, md:3}}>
           <AppWidgetSummary
-            title="Candidature acceptées"
-            total={totalCandidatureAccepted}
+            title="Total utilisateurs"
+            total={totalUser}
             color="success"
             icon={<img alt="icon" src="/assets/icons/glass/ic_glass_bag1.png" />}
           />
@@ -97,8 +105,8 @@ export default function AppView() {
 
         <Grid size={{xs:12, sm:6, md:3}}>
           <AppWidgetSummary
-            title="Comptes entreprises"
-            total={totalRecruiter}
+            title="Partenaires"
+            total={totalPartners}
             color="info"
             icon={<img alt="icon" src="/assets/icons/glass/ic_glass_batiment.png" />}
           />
@@ -106,8 +114,8 @@ export default function AppView() {
 
         <Grid size={{xs:12, sm:6, md:3}}>
           <AppWidgetSummary
-            title="Comptes particuliers"
-            total={totalParticulier}
+            title="Total souscriptions"
+            total={totalSubscriptionInPending}
             color="warning"
             icon={<img alt="icon" src="/assets/icons/glass/ic_glass_users.png" />}
           />
@@ -115,28 +123,28 @@ export default function AppView() {
 
         <Grid size={{xs:12, md:6, lg:8}}>
           <AppWebsiteVisits
-            title="Rapport offre/demande/expension sur les 10 derniers jours"
-            subheader="il s'agit ici d'un ration entre l'offre et la demande ainsi que les nouvelles adhésions"
+            title="Rapport nouveau utilisateurs/abonnement freemium/abonnement convertie sur les 30 derniers jours"
+            subheader="il s'agit ici d'un ration entre les nouveaux utilisateurs et les abonnements converties"
             chart={{
               labels: dates.reverse(),
               series: [
                 {
-                  name: "Offres d'emplois",
+                  name: "Nouveaux utilisateurs",
                   type: 'column',
                   fill: 'solid',
-                  data: totaljobOffers.reverse(),
+                  data: newUserAtMoment.reverse(),
                 },
                 {
-                  name: 'Candidatures déposées',
+                  name: 'Abonnements freemium',
                   type: 'area',
                   fill: 'gradient',
-                  data: totalCandidatures.reverse(),
+                  data: subscriptionFreemium.reverse(),
                 },
                 {
-                  name: 'Candidatures acceptées',
+                  name: 'Abonnements converties',
                   type: 'line',
                   fill: 'solid',
-                  data: totalCandidatureAccepteds.reverse(),
+                  data: subscriptionWithoutFreemium.reverse(),
                 },
               ],
             }}
@@ -145,33 +153,25 @@ export default function AppView() {
 
         <Grid size={{xs:12, md:6, lg:4}}>
           <AppCurrentVisits
-            title="Rapport type d'emploi annuel"
-            subheader={`Statistique global sur les types d'emploi crées durant ${new Date().getFullYear()}`}
+            title="Rapport souscription annuelle par partenaire"
+            subheader={`Statistique global sur les souscriptions crées durant ${new Date().getFullYear()}`}
             chart={{
-              series: annualRatioJobOffers,
+              series: annualSubscriptionPartners,
             }}
           />
         </Grid>
 
         <Grid size={{xs:12, md:6, lg:8}}>
           <AppConversionRates
-            title="Classement des entreprises qui font le plus d'offres"
-            subheader="(Top 10)"
+            title="Classement des jeux les plus joués"
+            subheader="Vision globale sur les jeux les plus joués par session"
             chart={{
-              series: [
-                { label: 'Shouz', value: 400 },
-                { label: 'emploi Jeune', value: 430 },
-                { label: 'Educariere', value: 448 },
-                { label: 'Djamo', value: 470 },
-                { label: 'Jumia', value: 540 },
-                { label: 'CIE', value: 580 },
-                { label: 'SODEDI', value: 690 }
-              ],
+              series: rankingGame,
             }}
           />
         </Grid>
 
-        <Grid size={{xs:12, md:6, lg:4}}>
+        {/* <Grid size={{xs:12, md:6, lg:4}}>
           <AppCurrentVisits
             title="Rapport qualité embauche annuel"
             subheader={`Candidature acceptées/rejetté/en attente pour ${new Date().getFullYear()}`}
@@ -204,7 +204,7 @@ export default function AppView() {
               time: new Date(training.startDate),
             }))}
           />
-        </Grid>
+        </Grid> */}
 
         {/* <Grid xs={12} md={6} lg={6}>
           <AppTrafficBySite
