@@ -69,7 +69,7 @@ export default function JobOfferView() {
     url_billing: '',
     isMobileMoney: false,
   });
-  const [pricingChoice, changePricingChoice] = useState([]);
+  // const [, changePricingChoice] = useState([]);
   const [logo, changeLogo] = useState('');
   const [numberTel, changeNumberTel] = useState('');
   const [email, changeEmail] = useState('');
@@ -239,14 +239,14 @@ export default function JobOfferView() {
     handleToogleDialogCreateOrUpdateConfig();
   }
 
-  const handleActionEditPricing = async (adminId, forfaits,config) => {
-    if (forfaits.length > 0) {
-      changePricingChoice(forfaits.map(({id, periode, type, price, freemium, durationForfait}) => ({id, periode, type, price, freemium, durationForfait})));
-      setIsMobileMoney(config.isMobileMoney ? 'oui':'non')
-    }
-    changeConfigPartnerairChoice((oldConfig) => ({...oldConfig, admin_id: adminId}));
-    handleToogleDialogCreateOrUpdateConfig();
-  }
+  // const handleActionEditPricing = async (adminId, forfaits,config) => {
+  //   if (forfaits.length > 0) {
+  //     changePricingChoice(forfaits.map(({id, periode, type, price, freemium, durationForfait}) => ({id, periode, type, price, freemium, durationForfait})));
+  //     setIsMobileMoney(config.isMobileMoney ? 'oui':'non')
+  //   }
+  //   changeConfigPartnerairChoice((oldConfig) => ({...oldConfig, admin_id: adminId}));
+  //   handleToogleDialogCreateOrUpdateConfig();
+  // }
   
   const handleActionJob = async (_id, approbation) => {
       try {

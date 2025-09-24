@@ -114,7 +114,7 @@ export default function PostCard({ game, index }) {
   
 
   return (
-    <Grid size={{xs:12, sm:4, md:3}}>
+    <Grid size={{xs:12, sm:3, md:2}}>
       <Badge.Ribbon text={isActive ? "En ligne" : "Inactif"} color="purple" >
       <Card>
         <Box
