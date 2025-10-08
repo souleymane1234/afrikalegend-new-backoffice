@@ -19,7 +19,7 @@
     "dev:host": "vite --host",
     "vite:start": "vite",
     "vite:build": "vite build",
-    "deploy": "git pull && yarn rm:build"
+    "deploy": "git pull && yarn re:build"
   },
   "dependencies": {
     "@ant-design/icons": "^6.0.0",
