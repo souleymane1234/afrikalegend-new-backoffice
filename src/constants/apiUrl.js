@@ -3,6 +3,7 @@ const base_url_asset = import.meta.env.VITE_BASE_URL_ASSET;
 
 export const apiUrl =  {
     authentication: `${base_url}/signin`,
+    resetPassword: `${base_url}/reset-passord`,
     // gestion admin
     addadmin: `${base_url}`,
     dashboard: `${base_url}/dashboard`,

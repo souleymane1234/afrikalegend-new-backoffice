@@ -454,6 +454,24 @@ export default class ConsumApi {
       }
   }
 
+  static async resetPassword({email}) {
+      try {
+          const response = await this.api.put(apiUrl.resetPassword, {email});
+          if (response.status >= 200 && response.status < 400) {
+            const { result:data , etat:success, error} = response.data;
+            if(success) {
+              return { data , success};
+            }
+            return { error:  error[0], success};
+          }
+          return {success: false, error: response.data.error[0]}
+          
+      } catch (error) {
+        const {message} = error.response.data
+        return {success: false, error: message[0]}
+      }
+  }
+
   static async validateJobOffre({_id, isActive}) {
     try {
       const token = AdminStorage.getTokenAdmin();

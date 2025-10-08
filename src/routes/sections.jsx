@@ -10,6 +10,7 @@ export const IndexPage = lazy(() => import('src/pages/app'));
 export const GamePage = lazy(() => import('src/pages/game'));
 export const UserPage = lazy(() => import('src/pages/user'));
 export const LoginPage = lazy(() => import('src/pages/login'));
+export const ResetPassWordPage = lazy(() => import('src/pages/reset-password'));
 export const ProductsPage = lazy(() => import('src/pages/products'));
 export const VotingPage = lazy(() => import('src/pages/voting'));
 export const JobOfferPage = lazy(() => import('src/pages/job-offer'));
@@ -52,6 +53,10 @@ export default function Router() {
     {
       path: 'login',
       element: <LoginPage />,
+    },
+    {
+      path: 'reset-password',
+      element: <ResetPassWordPage />,
     },
     {
       path: '404',
