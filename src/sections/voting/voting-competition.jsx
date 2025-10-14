@@ -40,7 +40,7 @@ export default function VotingCompetion({ post, sx, admin }) {
       variant="subtitle2"
       underline="hover"
       onClick={()=> {
-        console.log(id);
+        // console.log(id);
       }}
       sx={{
         overflow: 'hidden',

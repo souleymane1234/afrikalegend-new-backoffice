@@ -261,8 +261,7 @@ export default function JobOfferView() {
                     messageApi.error(response.error)
                   }
       } catch (e) {
-          const {data} = e.response;
-          console.log(data, 'error data')
+          // const {data} = e.response;
           messageApi.error("Une erreur s'est produite, veuillez reprendre ultérieurement")
               // setStateCreateJob(false)
               
@@ -313,7 +312,6 @@ export default function JobOfferView() {
   }
 
   const createOrUpdateConfigPartners = async () => {
-    console.log(configPartnerairChoice.domaine);
     const isReady = configPartnerairChoice.domaine.trim().length > 0;
     if(isReady) {
       messageApi.loading("Enregistrement en cours");

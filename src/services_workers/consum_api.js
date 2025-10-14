@@ -166,7 +166,6 @@ export default class ConsumApi {
         if (response.status >= 200 && response.status < 400) {
           const { result:data , etat, message = ''} = response.data;
           if (etat) return data;
-          console.log("Message erreur dans getPartners", message)
           if(!etat && message.indexOf('token') !== -1) {
             AdminStorage.clearStokage();
             throw new Error('Session Expiré veuillez vous réconnecter');
@@ -283,7 +282,6 @@ export default class ConsumApi {
         }
         return {etat: false, error: Error("Un problème avec le serveur. Veuillez réssayer ultérieurement")}
     } catch (error) {
-      console.log(error.response.data, 'error.response.data')
       return {etat: false, error: Error("Un problème lors de l'envoie. Veuillez vérifier votre connexion internet")}
     }
   }

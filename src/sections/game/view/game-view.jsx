@@ -156,7 +156,6 @@ export default function GameView() {
   )
 
   const createGames = async () => {
-    console.log('categorieGameChoice', categorieGameChoice);
     const categoriesFilter = categorieGameChoice.map(category => {
       const categoryFound = categories.find(cat => cat.name === category);
       return categoryFound ? categoryFound.id : null;
