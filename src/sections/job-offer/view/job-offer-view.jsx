@@ -313,7 +313,7 @@ export default function JobOfferView() {
   }
 
   const createOrUpdateConfigPartners = async () => {
-
+    console.log(configPartnerairChoice.domaine);
     const isReady = configPartnerairChoice.domaine.trim().length > 0;
     if(isReady) {
       messageApi.loading("Enregistrement en cours");

@@ -394,10 +394,10 @@ export default class ConsumApi {
   static async createOrUpdateConfigPartners({ domaine, url_generate_otp, url_billing, isMobileMoney, admin_id}) {
     const token = AdminStorage.getTokenAdmin();
     const body = { domaine, url_generate_otp, url_billing, isMobileMoney, admin_id };
-    if (url_generate_otp.length === 0) {
+    if (url_generate_otp && url_generate_otp.length === 0) {
       delete body.url_generate_otp;
     }
-    if (url_billing.length === 0) {
+    if (url_billing && url_billing.length === 0) {
       delete body.url_billing;
     }
 
