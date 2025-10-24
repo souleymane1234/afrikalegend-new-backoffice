@@ -32,7 +32,7 @@ const ColorButton = styled(Button)(({ theme }) => ({
   },
 }));
 export default function VotingCompetion({ post, sx, admin }) {
-  const { cover, title, id, describe, imageMiss } = post;
+  const { cover, title, describe, imageMiss } = post;
 
   const renderDescription = (
     <Link

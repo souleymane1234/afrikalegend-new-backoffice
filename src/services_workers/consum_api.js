@@ -429,6 +429,40 @@ export default class ConsumApi {
     }
   }
 
+  static async createOrUpdateForfaitPartners(forfaits) {
+    const token = AdminStorage.getTokenAdmin();
+    const body = { forfaits };
+
+    try {
+      const response = await this.api.post(apiUrl.forfaitsPartner, body, {
+        headers: { 'Authorization': token }
+      });
+
+      if (response.status >= 200 && response.status < 400) {
+        const { result: data, etat: success, message = '' } = response.data;
+
+        if (success) {
+          return data;
+        }
+
+        if (!success && message.toLowerCase().includes('token')) {
+          AdminStorage.clearStokage();
+          throw new Error("Session expirée, veuillez vous reconnecter.");
+        }
+
+        throw new Error(message || "La création du partenaire a échoué.");
+      } else {
+        throw new Error("Un problème avec le serveur. Veuillez réessayer ultérieurement.");
+      }
+    } catch (error) {
+      console.error(error.response?.data || error.message, 'Erreur lors de la création du partenaire');
+      throw new Error(
+        error.response?.data?.message ||
+        "Un problème lors de l'envoi. Veuillez vérifier votre connexion internet."
+      );
+    }
+  }
+
 
   
   

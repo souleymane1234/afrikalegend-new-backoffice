@@ -34,10 +34,22 @@ const createOrUpdateConfigPartner = async ({ domaine, url_generate_otp, url_bill
   }
 };
 
+const createOrUpdateForfaitPartner = async (forfaits) => {
+  try {
+    return await ConsumApi.createOrUpdateForfaitPartners(forfaits);
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
 export const useCreatePartner = () => useMutation({
   mutationFn: createPartner,
 });
 
 export const useCreateOrUpdateConfigPartner = () => useMutation({
   mutationFn: createOrUpdateConfigPartner,
+});
+
+export const useCreateOrUpdateForfaitPartner = () => useMutation({
+  mutationFn: createOrUpdateForfaitPartner,
 });

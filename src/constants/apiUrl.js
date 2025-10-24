@@ -15,6 +15,7 @@ export const apiUrl =  {
     games: `${base_url}/games`,
     category: `${base_url}/category`,
     configPartner: `${base_url}/partners/config`,
+    forfaitsPartner: `${base_url}/partners/forfaits`,
 
     certificationsOnShore: `${base_url}/certification`,
 

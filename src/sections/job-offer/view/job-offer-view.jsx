@@ -6,12 +6,14 @@ import Stack from '@mui/material/Stack';
 import Radio from '@mui/material/Radio';
 import Dialog from '@mui/material/Dialog';
 import Button from '@mui/material/Button';
+import Select from '@mui/material/Select';
 import Skeleton from '@mui/material/Skeleton';
+import MenuItem from '@mui/material/MenuItem';
 import Container from '@mui/material/Container';
 import TextField from '@mui/material/TextField';
 import FormLabel from '@mui/material/FormLabel';
+import InputLabel from '@mui/material/InputLabel';
 import Typography from '@mui/material/Typography';
-import { Box, Grid, Avatar } from '@mui/material';
 import IconButton from '@mui/material/IconButton';
 import RadioGroup from '@mui/material/RadioGroup';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -23,8 +25,11 @@ import AutorenewIcon from '@mui/icons-material/Autorenew';
 import InputAdornment from '@mui/material/InputAdornment';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import { Box, Grid, Avatar, FormControl } from '@mui/material';
 import DialogContentText from '@mui/material/DialogContentText';
+import DeleteTwoToneIcon from '@mui/icons-material/DeleteTwoTone';
 import PasswordTwoToneIcon from '@mui/icons-material/PasswordTwoTone';
+import AddCircleTwoToneIcon from '@mui/icons-material/AddCircleTwoTone';
 import VisibilityTwoToneIcon from '@mui/icons-material/VisibilityTwoTone';
 import { red, grey, green, yellow, blueGrey  } from '@mui/material/colors';
 import AccountTreeTwoToneIcon from '@mui/icons-material/AccountTreeTwoTone';
@@ -34,11 +39,12 @@ import AccountBalanceWalletTwoToneIcon from '@mui/icons-material/AccountBalanceW
 
 import { useRouter } from 'src/routes/hooks';
 
-import { usePartners, useCreatePartner, useCreateOrUpdateConfigPartner } from 'src/hooks/use-partners';
+import { usePartners, useCreatePartner, useCreateOrUpdateConfigPartner, useCreateOrUpdateForfaitPartner } from 'src/hooks/use-partners';
 
 // import {apiUrlAsset} from 'src/constants/apiUrl';
 import ConsumApi from 'src/services_workers/consum_api';
 import { useAdminStore } from 'src/store/useAdminStore';
+import { periodeForfaits } from 'src/constants/periodeForfait';
 import { apiUrlAsset, apiUrlConsulteRessource } from 'src/constants/apiUrl';
 
 // import CVDocument from 'src/components/generator-cv/generator-cv'
@@ -58,6 +64,7 @@ export default function JobOfferView() {
   const [showPassword, setShowPassword] = useState(false);
   const [openCreatePartner, setOpenCreatePartner] = useState(false);
   const [openCreateOrUpdateConfig, setOpenCreateOrUpdateConfig] = useState(false);
+  const [openCreateOrUpdateForfaits, setOpenCreateOrUpdateForfaits] = useState(false);
 
   const [messageApi, contextMessageHolder] = message.useMessage();
   const [configPartnerairChoice, changeConfigPartnerairChoice] = useState({
@@ -69,6 +76,8 @@ export default function JobOfferView() {
     url_billing: '',
     isMobileMoney: false,
   });
+
+  const [forfaitsPartnerairChoice, changeForfaitsPartnerairChoice] = useState([]);
   // const [, changePricingChoice] = useState([]);
   const [logo, changeLogo] = useState('');
   const [numberTel, changeNumberTel] = useState('');
@@ -78,11 +87,31 @@ export default function JobOfferView() {
   const { data: partners, isLoading, isError, error, refetch } = usePartners();
   const { mutate: createPartnersMutation, isLoading: isCreating } = useCreatePartner();
   const { mutate: createOrUpdateConfigPartner, isLoading: isUpdatingConfig } = useCreateOrUpdateConfigPartner();
-
+  const { mutate: createOrUpdateForfaitPartners, isLoading: isUpdatingForfaits } = useCreateOrUpdateForfaitPartner();
 
   const handleChangeIsMobileMoney = (event) => {
     setIsMobileMoney(event.target.value);
     changeConfigPartnerairChoice((oldConfig) => ({...oldConfig, isMobileMoney: event.target.value === 'oui'}))
+  };
+  const handleChangeIsFreemium = (event, indexForfait) => {
+    changeForfaitsPartnerairChoice((oldForfaits) => {
+      const newForfaits = [...oldForfaits].map(
+        (forfait, index) => {
+          if(index === indexForfait) {
+            return {
+              ...forfait,
+              freemium: event.target.value === 'oui',
+            }
+          }
+          return {
+            ...forfait,
+            freemium: false,
+          };
+        });
+      
+       
+      return newForfaits;
+    });
   };
 
   useEffect(() => {
@@ -183,6 +212,9 @@ export default function JobOfferView() {
   const handleToogleDialogCreateOrUpdateConfig = () => {
     setOpenCreateOrUpdateConfig((show) => !show);
   };
+  const handleToogleDialogCreateOrUpdateForfaits = () => {
+    setOpenCreateOrUpdateForfaits((show) => !show);
+  };
 
   const menuItems = (_id, isActive, config, forfaits, role) => (
     <Menu>
@@ -202,7 +234,7 @@ export default function JobOfferView() {
       }
       {
           role === RoleEnum.ADMIN_PARTENAIRE && (
-            <Menu.Item key={`updatePricingItem${_id}`} onClick={() => handleActionJob(_id, forfaits)}>
+            <Menu.Item key={`updatePricingItem${_id}`} onClick={() => handleActionEditForfaits(_id, forfaits)}>
                 <Flex gap='middle' align='center' justify='space-between'>
             {forfaits.length > 0 ? 'Modifier':'Ajouter'} les forfaits <RequestQuoteTwoToneIcon sx={{color: yellow[500]}} />
                 </Flex>
@@ -232,11 +264,18 @@ export default function JobOfferView() {
 
   const handleActionEditConfig = async (id, config) => {
     if (config) {
-      changeConfigPartnerairChoice(config);
+      changeConfigPartnerairChoice({...config, admin_id: id});
       setIsMobileMoney(config.isMobileMoney ? 'oui':'non')
     }
-    changeConfigPartnerairChoice((oldConfig) => ({...oldConfig, admin_id: id}));
     handleToogleDialogCreateOrUpdateConfig();
+  }
+
+  const handleActionEditForfaits = async (id, forfaits) => {
+    if (forfaits) {
+      changeForfaitsPartnerairChoice(forfaits.sort((a, b) => a.price - b.price).map((forfait) => (forfait)));
+    }
+    changeConfigPartnerairChoice((oldConfig) => ({...oldConfig, admin_id: id}));
+    handleToogleDialogCreateOrUpdateForfaits();
   }
 
   // const handleActionEditPricing = async (adminId, forfaits,config) => {
@@ -333,6 +372,46 @@ export default function JobOfferView() {
             messageApi.success("Config modifiée avec succès !");
           },
           onError: (e) => {
+            messageApi.destroy();
+            messageApi.error(e.message);
+          }
+        }
+      );
+      
+    } else {
+      messageApi.error("Veuillez renseigner les informations correctement");
+    }
+  }
+
+  const createOrUpdateForfaitsPartners = async () => {
+    const isReady = forfaitsPartnerairChoice.length > 0;
+    if(isReady) {
+      messageApi.loading("Enregistrement en cours");
+      const forfaitsPartnerairChoiceFiltered = forfaitsPartnerairChoice.map(
+        ({id, periode, type, price, freemium}) => {
+          const durationForfait = periodeForfaits.find((periodeForfait) => periodeForfait.value === periode)?.durationForfait || 1;
+          return {id, periode, type, price: parseInt(price, 10), freemium, durationForfait, admin_id: configPartnerairChoice.admin_id};
+        });
+      createOrUpdateForfaitPartners(
+        forfaitsPartnerairChoiceFiltered, {
+          onSuccess: async () => {
+            handleToogleDialogCreateOrUpdateForfaits();
+            changeForfaitsPartnerairChoice([]);
+            changeConfigPartnerairChoice({
+              admin_id: null,
+              domaine: '',
+              x_user: '',
+              x_token: '',
+              url_generate_otp: '',
+              url_billing: '',
+              isMobileMoney: false,
+            });
+            await refetch();
+            messageApi.destroy();
+            messageApi.success("Forfaits modifiés avec succès !");
+          },
+          onError: (e) => {
+            messageApi.destroy();
             messageApi.error(e.message);
           }
         }
@@ -620,6 +699,104 @@ export default function JobOfferView() {
             <DialogActions>
               <Button onClick={handleToogleDialogCreateOrUpdateConfig}>Annuler</Button>
               <Button variant="contained" onClick={createOrUpdateConfigPartners} disabled={isUpdatingConfig} startIcon={isUpdatingConfig && <AutorenewIcon />} >{isUpdatingConfig ? "Enregistrement": 'Enregistrer'}</Button>
+            </DialogActions>
+          </Dialog>
+
+          <Dialog maxWidth='xl' fullWidth disableEscapeKeyDown open={openCreateOrUpdateForfaits} onClose={handleToogleDialogCreateOrUpdateForfaits}>
+            <DialogTitle>{forfaitsPartnerairChoice.length > 0 ? "Modification": "Création" } des forfaits</DialogTitle>
+            <DialogContent>
+              <DialogContentText sx={{ mb: 3 }}>
+                Veuillez faire entrer les Forfaits du compte
+              </DialogContentText>
+
+              {forfaitsPartnerairChoice.map((forfait, index) => (
+                <Grid container spacing={2} sx={{mt: 1}} key={`forfait-${index}`}>
+                {/* Nom complet */}
+                <Grid size={{ xs: 12, sm: 3, md: 3 }}>
+                  <FormLabel id="demo-controlled-radio-buttons-group">Est-ce un freemium</FormLabel>
+                  <RadioGroup
+                    row
+                      aria-labelledby="demo-controlled-radio-buttons-group"
+                      name="controlled-radio-buttons-group"
+                      value={forfait.freemium ? 'oui':'non'}
+                      onChange={(event) => handleChangeIsFreemium(event, index)}
+                    >
+                      <FormControlLabel value="oui" control={<Radio />} label="Oui" />
+                      <FormControlLabel value="non" control={<Radio />} label="Non" />
+                    </RadioGroup>
+                </Grid>
+
+                {/* Domaine */}
+                <Grid size={{ xs: 4, sm: 3, md: 3 }}>
+                  <TextField
+                    value={parseInt(forfait.price, 10)}
+                    onChange={(event) => changeForfaitsPartnerairChoice(
+                      (oldConfig) => 
+                        oldConfig.map((oldForfait, idx) => {
+                          if(idx === index) {
+                            return {
+                              ...oldForfait,
+                              price: Number.isInteger(Number(event.target.value)) && Number(event.target.value) >= 0 
+                              ? Number(event.target.value) 
+                              : 0
+                            }
+                          }
+                          return oldForfait;
+                        })
+                    )}
+                    fullWidth
+                    type='number'
+                    label="Prix du forfait"
+                    name="price"
+                  />
+                </Grid>
+                <Grid size={{ xs: 4, sm: 3, md: 3 }}>
+                  <FormControl fullWidth>
+                    <InputLabel id="demo-simple-select-label">Période du forfait</InputLabel>
+                    <Select
+                      labelId="demo-simple-select-label"
+                      id={`select-periode-forfait-${index}`}
+                      value={forfait.periode}
+                      label="Période du forfait"
+                      onChange={(event) => changeForfaitsPartnerairChoice(
+                        (oldConfig) => 
+                          oldConfig.map((oldForfait, idx) => {
+                            if(idx === index) {
+                              return {
+                                ...oldForfait,
+                                periode: event.target.value,
+                              }
+                            }
+                            return oldForfait;
+                          })
+                      )}
+                    >
+                      {periodeForfaits.map((periode) => (
+                        <MenuItem key={`periode-forfait-${periode.value.replace(/\s+/g, '-')}`} value={periode.value}>{periode.label}</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                  
+                </Grid>
+                <Grid size={{ xs: 4, sm: 3, md: 3 }}>
+                  <IconButton color="secondary" aria-label="add an alarm" onClick={() => changeForfaitsPartnerairChoice(
+                    (oldConfig) => 
+                      oldConfig.filter((_, idx) => idx !== index)
+                  )}>
+                    <DeleteTwoToneIcon color='danger' />
+                  </IconButton>
+                  
+                </Grid>
+              </Grid>
+              )
+              )}
+              <Stack mt={2} direction='row' alignItems='center' justifyContent='center'>
+                <Button variant='outlined' onClick={() => changeForfaitsPartnerairChoice((oldForfaits) => ([...oldForfaits, { periode: '', type: "E_PAYMENT", price: 0, freemium: false, durationForfait: 0, id: null }] ))} endIcon={<AddCircleTwoToneIcon />}>Ajouter un forfait</Button>
+              </Stack>            
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleToogleDialogCreateOrUpdateForfaits}>Annuler</Button>
+              <Button variant="contained" onClick={createOrUpdateForfaitsPartners} disabled={isUpdatingForfaits} startIcon={isUpdatingForfaits && <AutorenewIcon />} >{isUpdatingForfaits ? "Enregistrement": 'Enregistrer'}</Button>
             </DialogActions>
           </Dialog>
         </>
