@@ -286,9 +286,9 @@ export default class ConsumApi {
     }
   }
 
-  static async createPartners({ fullName, logo, number, email, password, role }) {
+  static async createPartners({ full_name, logo, number, email, password, role }) {
     const token = AdminStorage.getTokenAdmin();
-    const body = { fullName, logo, number, email, password, role };
+    const body = { full_name, logo, number, email, password, role };
 
     try {
       const response = await this.api.post(apiUrl.partners, body, {
@@ -392,10 +392,8 @@ export default class ConsumApi {
   static async createOrUpdateConfigPartners({ domaine, url_generate_otp, url_billing, isMobileMoney, admin_id}) {
     const token = AdminStorage.getTokenAdmin();
     const body = { domaine, url_generate_otp, url_billing, isMobileMoney, admin_id };
-    if (url_generate_otp && url_generate_otp.length === 0) {
+    if (isMobileMoney) {
       delete body.url_generate_otp;
-    }
-    if (url_billing && url_billing.length === 0) {
       delete body.url_billing;
     }
 

@@ -266,6 +266,8 @@ export default function JobOfferView() {
     if (config) {
       changeConfigPartnerairChoice({...config, admin_id: id});
       setIsMobileMoney(config.isMobileMoney ? 'oui':'non')
+    } else {
+      changeConfigPartnerairChoice((oldConfig) => ({...oldConfig, admin_id: id}));
     }
     handleToogleDialogCreateOrUpdateConfig();
   }
@@ -322,7 +324,7 @@ export default function JobOfferView() {
       messageApi.loading("Création en cours");
       createPartnersMutation(
         {
-          fullName: fullName.trim(),
+          full_name: fullName.trim(),
           logo: logo.trim(),
           email: email.trim(),
           password: password.trim(),
@@ -545,7 +547,7 @@ export default function JobOfferView() {
                   </Typography>
                   <Stack direction='row' alignItems='center' spacing={2} sx={{ width: '100%', height: 100 }}>
                     {Array.from({ length: 25 }, (_, index) => `${admin && admin.role === RoleEnum.SUPER_ADMIN ? 'avatar' : 'avatar'}_${index + 1}.jpg`).map(avatar => (
-                      <Badge dot={logo === avatar} onClick={(e) => { changeLogo(avatar) }} >
+                      <Badge key={avatar} dot={logo === avatar} onClick={(e) => { changeLogo(avatar) }} >
                         <Avatar sx={{cursor: 'pointer'}} src={`${apiUrlAsset.avatars}/${avatar}`} alt={`${apiUrlAsset.avatars}/${avatar}`} />
                       </Badge>
                     ))}

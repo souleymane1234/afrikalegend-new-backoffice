@@ -19,9 +19,9 @@ export const usePartners = () => useQuery({
 });
 
 // --- Partie POST pour créer un partenaire
-const createPartner = async ({ fullName, logo, number, email, password, role }) => {
+const createPartner = async ({ full_name, logo, number, email, password, role }) => {
   try {
-    return await ConsumApi.createPartners({ fullName, logo, number, email, password, role });
+    return await ConsumApi.createPartners({ full_name, logo, number, email, password, role });
   } catch (error) {
     throw new Error(error.message);
   }

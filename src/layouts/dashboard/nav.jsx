@@ -26,7 +26,8 @@ import navConfig from './config-navigation';
 
 export default function Nav({ openNav, onCloseNav }) {
   // const pathname = usePathname();
-    const { admin } = useAdminStore();
+  const { admin } = useAdminStore();
+  console.log(`${apiUrlAsset.avatars}/${admin.logo}`);
 
 
   const upLg = useResponsive('up', 'lg');
