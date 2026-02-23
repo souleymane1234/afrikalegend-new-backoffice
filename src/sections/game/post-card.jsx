@@ -25,8 +25,9 @@ import Iconify from 'src/components/iconify';
 
 export default function PostCard({ game, index }) {
   
-  const { title, ratings, id, isActive, categories, profilPicture } = game;
+  const { title, ratings, id, isActive, categories, poster } = game;
   const router = useRouter();
+  console.log(`....... ${apiUrlAsset.moovies}/${poster}`);
 
 
   const renderTitle = (
@@ -62,8 +63,8 @@ export default function PostCard({ game, index }) {
         color: 'text.disabled',
       }}
     >
-      {[
-        { number: ratings.reduce((acc, { rating }) => acc + rating, 0) / ratings.length, icon: 'solar:user-broken' },
+      {ratings && Array.isArray(ratings) && ratings.length > 0 ? [
+        { number: ratings.reduce((acc, { rating }) => acc + (rating || 0), 0) / ratings.length, icon: 'solar:user-broken' },
       ].map((info, _index) => (
         <Stack
           key={_index}
@@ -76,15 +77,15 @@ export default function PostCard({ game, index }) {
           <Iconify width={16} icon={info.icon} sx={{ mr: 0.5 }} />
           <Typography variant="caption">{info.number}</Typography>
         </Stack>
-      ))}
+      )) : null}
     </Stack>
   );
 
-  const renderCover = (
+  const renderCover = poster ? (
     <Box
       component="img"
-      alt={title}
-      src={`${apiUrlAsset.games}/${profilPicture}`}
+      alt={title || 'Game cover'}
+      src={`${apiUrlAsset.moovies}/${poster}`}
       sx={{
         top: 0,
         width: 1,
@@ -93,7 +94,7 @@ export default function PostCard({ game, index }) {
         position: 'absolute',
       }}
     />
-  );
+  ) : null;
 
   const renderDate = (
     <Typography
@@ -107,7 +108,10 @@ export default function PostCard({ game, index }) {
         // color: 'common.white',
       }}
     >
-      {categories.map(({name}) => name.trim().toLocaleUpperCase()).join(' - ')}
+      {categories && Array.isArray(categories) ? categories.map((category) => {
+        const categoryName = category.title || category.name || '';
+        return categoryName.trim().toLocaleUpperCase();
+      }).filter(name => name.length > 0).join(' - ') : ''}
     </Typography>
   );
 

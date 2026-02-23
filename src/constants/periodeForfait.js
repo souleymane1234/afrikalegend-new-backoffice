@@ -1,9 +1,9 @@
 export const periodeForfaits = [
-    { label: "1 JOUR", value: "JOUR", durationForfait: 1 },
-    { label: "3 JOURS", value: "3 JOURS", durationForfait: 3 },
-    { label: "1 SEMAINE", value: "SEMAINE", durationForfait: 7 },
-    { label: "1 MOIS", value: "MOIS", durationForfait: 30 },
-    { label: "3 MOIS", value: "3 MOIS", durationForfait: 90 },
-    { label: "6 MOIS", value: "6 MOIS", durationForfait: 180 },
-    { label: "1 AN", value: "AN", durationForfait: 365 },
+    { label: "10 PIECES", value: "10 PIECES", durationForfait: 1 },
+    { label: "30 PIECES", value: "30 PIECES", durationForfait: 3 },
+    { label: "100 PIECES", value: "100 PIECES", durationForfait: 7 },
+    { label: "1000 PIECES", value: "1000 PIECES", durationForfait: 30 },
+    { label: "3000 PIECES", value: "3000 PIECES", durationForfait: 90 },
+    { label: "6000 PIECES", value: "6000 PIECES", durationForfait: 180 },
+    { label: "10000 PIECES", value: "10000 PIECES", durationForfait: 365 },
   ]

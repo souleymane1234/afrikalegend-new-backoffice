@@ -44,7 +44,7 @@ export default function Router() {
         { path: routesName.partners, element: <JobOfferPage /> },
         { path: routesName.campagnes, element: <VotingPage /> },
         { path: routesName.users, element: <VotingPage /> },
-        { path: routesName.games, element: <GamePage /> },
+        { path: routesName.moovies, element: <GamePage /> },
         { path: routesName.createAdmin, element: <CreateAdminPage /> },
         { path: routesName.detailFormation, element: <ProductsPage /> },
         { path: routesName.createFormation, element: <CreateActualityPage /> },

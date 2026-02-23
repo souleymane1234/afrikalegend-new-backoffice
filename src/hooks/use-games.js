@@ -2,48 +2,52 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 
 import ConsumApi from 'src/services_workers/consum_api';
 
-const getGames = async () => {
+const getmoovies = async () => {
   try {
-    return await ConsumApi.getGames();
+    return await ConsumApi.getmoovies();
   } catch (error) {
     throw new Error(error.message);
   }
 };
 
-const getCategoriesGames = async () => {
+const getCategoriesmoovies = async () => {
   try {
-    return await ConsumApi.getCategoriesGames();
+    return await ConsumApi.getCategoriesmoovies();
   } catch (error) {
     throw new Error(error.message);
   }
 };
 
-export const useGames = () => useQuery({
-  queryKey: ['games'],
-  queryFn: getGames,
+export const usemoovies = () => useQuery({
+  queryKey: ['moovies'],
+  queryFn: getmoovies,
   staleTime: 5 * 60 * 1000, // Cache pendant 5 minutes
   retry: 1, // Ne réessaye qu'une seule fois en cas d'erreur
+  enabled: true, // S'assurer que la requête est activée
+  refetchOnMount: true, // Recharger au montage du composant
 });
 
-export const useCategoriesGames = () => useQuery({
+export const useCategoriesmoovies = () => useQuery({
   queryKey: ['categories'],
-  queryFn: getCategoriesGames,
+  queryFn: getCategoriesmoovies,
   staleTime: 5 * 60 * 1000, // Cache pendant 5 minutes
   retry: 1, // Ne réessaye qu'une seule fois en cas d'erreur
+  enabled: true, // S'assurer que la requête est activée
+  refetchOnMount: true, // Recharger au montage du composant
 });
 
 // --- Partie POST pour créer
-const createGame = async ({ nameProfil, base64Profil, title, description, videoCover, covers, isPortrait, url, categories }) => {
+const createGame = async ({ nameProfil, base64Profil, title, description, trailler, covers, episodes, priceEpisode, categories }) => {
   try {
-    return await ConsumApi.createGame({ nameProfil, base64Profil, title, description, videoCover, covers: covers.reverse(), isPortrait, url, categories });
+    return await ConsumApi.createGame({ nameProfil, base64Profil, title, description, trailler, covers: covers.reverse(), episodes, priceEpisode, categories });
   } catch (error) {
     throw new Error(error.message);
   }
 };
 
-const createCategoryGames = async ({ name, fileName, base64}) => {
+const createCategorymoovies = async ({ name}) => {
   try {
-    return await ConsumApi.createCategoryGames({ name, fileName, base64});
+    return await ConsumApi.createCategorymoovies({ name});
   } catch (error) {
     throw new Error(error.message);
   }
@@ -53,6 +57,6 @@ export const useCreateGame = () => useMutation({
   mutationFn: createGame,
 });
 
-export const useCreateCategoryGames = () => useMutation({
-  mutationFn: createCategoryGames,
+export const useCreateCategorymoovies = () => useMutation({
+  mutationFn: createCategorymoovies,
 });

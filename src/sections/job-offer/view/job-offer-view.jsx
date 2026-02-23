@@ -45,12 +45,21 @@ import { usePartners, useCreatePartner, useCreateOrUpdateConfigPartner, useCreat
 import ConsumApi from 'src/services_workers/consum_api';
 import { useAdminStore } from 'src/store/useAdminStore';
 import { periodeForfaits } from 'src/constants/periodeForfait';
+import { RoleEnum } from 'src/enum/RoleEnum';
 import { apiUrlAsset, apiUrlConsulteRessource } from 'src/constants/apiUrl';
+
+// Périodes de forfait en jours
+const periodeJours = [
+  { label: "1 JOUR", value: 1 },
+  { label: "3 JOURS", value: 3 },
+  { label: "1 SEMAINE", value: 7 },
+  { label: "1 MOIS", value: 30 },
+  { label: "3 MOIS", value: 90 },
+  { label: "1 AN", value: 365 },
+];
 
 // import CVDocument from 'src/components/generator-cv/generator-cv'
 // import {AdminStorage} from 'src/storages/admins_storage';
-
-import { RoleEnum } from 'src/enum/RoleEnum';
 
 // import Iconify from 'src/components/iconify';
 const { Text } = Typo
@@ -264,7 +273,12 @@ export default function JobOfferView() {
 
   const handleActionEditConfig = async (id, config) => {
     if (config) {
-      changeConfigPartnerairChoice({...config, admin_id: id});
+      changeConfigPartnerairChoice({
+        ...config, 
+        admin_id: id,
+        x_user: config.client_id || config.x_user || '',
+        x_token: config.client_secret || config.x_token || '',
+      });
       setIsMobileMoney(config.isMobileMoney ? 'oui':'non')
     } else {
       changeConfigPartnerairChoice((oldConfig) => ({...oldConfig, admin_id: id}));
@@ -274,7 +288,18 @@ export default function JobOfferView() {
 
   const handleActionEditForfaits = async (id, forfaits) => {
     if (forfaits) {
-      changeForfaitsPartnerairChoice(forfaits.sort((a, b) => a.price - b.price).map((forfait) => (forfait)));
+      // Convertir les forfaits de l'API au format du formulaire
+      const forfaitsFormatted = forfaits.sort((a, b) => a.price - b.price).map((forfait) => {
+        // Si l'API renvoie pieces directement, convertir en format "X PIECES"
+        if (forfait.pieces !== undefined && !forfait.periode?.includes('PIECES')) {
+          return {
+            ...forfait,
+            periode: `${forfait.pieces} PIECES`
+          };
+        }
+        return forfait;
+      });
+      changeForfaitsPartnerairChoice(forfaitsFormatted);
     }
     changeConfigPartnerairChoice((oldConfig) => ({...oldConfig, admin_id: id}));
     handleToogleDialogCreateOrUpdateForfaits();
@@ -353,11 +378,15 @@ export default function JobOfferView() {
   }
 
   const createOrUpdateConfigPartners = async () => {
-    const isReady = configPartnerairChoice.domaine.trim().length > 0;
+    const isReady = configPartnerairChoice.x_user.trim().length > 0 && configPartnerairChoice.x_token.trim().length > 0;
     if(isReady) {
       messageApi.loading("Enregistrement en cours");
       createOrUpdateConfigPartner(
-        configPartnerairChoice, {
+        {
+          ...configPartnerairChoice,
+          client_id: configPartnerairChoice.x_user,
+          client_secret: configPartnerairChoice.x_token,
+        }, {
           onSuccess: async () => {
             handleToogleDialogCreateOrUpdateConfig();
             changeConfigPartnerairChoice({
@@ -390,10 +419,23 @@ export default function JobOfferView() {
     if(isReady) {
       messageApi.loading("Enregistrement en cours");
       const forfaitsPartnerairChoiceFiltered = forfaitsPartnerairChoice.map(
-        ({id, periode, type, price, freemium}) => {
-          const durationForfait = periodeForfaits.find((periodeForfait) => periodeForfait.value === periode)?.durationForfait || 1;
-          return {id, periode, type, price: parseInt(price, 10), freemium, durationForfait, admin_id: configPartnerairChoice.admin_id};
-        });
+        ({id, periode, type, price, freemium, durationForfait}) => {
+          // Extraire le nombre de pièces de la période (ex: "10 PIECES" -> 10)
+          const pieces = periode ? parseInt(periode.split(' ')[0], 10) || 0 : 0;
+          // Convertir la période en format "JOUR" pour l'API
+          const periodeFormatted = 'JOUR';
+          
+          return {
+            id: id || null,
+            admin_id: configPartnerairChoice.admin_id,
+            periode: periodeFormatted,
+            price: parseInt(price, 10),
+            durationForfait: durationForfait || 1,
+            pieces,
+            freemium: freemium || false
+          };
+        }
+      );
       createOrUpdateForfaitPartners(
         forfaitsPartnerairChoiceFiltered, {
           onSuccess: async () => {
@@ -476,7 +518,7 @@ export default function JobOfferView() {
                       Client ID
                     </Typography>
                     <Typography variant='body2' >
-                      {config.x_user}
+                      {config.client_id || config.x_user}
                     </Typography>
                   </Grid>
                   <Grid size={{ xs: 6, sm: 6, md: 3}}>
@@ -484,7 +526,7 @@ export default function JobOfferView() {
                       Client Secret
                     </Typography>
                     <Typography variant='body2' >
-                      {config.x_token}
+                      {config.client_secret || config.x_token}
                     </Typography>
                   </Grid>
                   {
@@ -639,7 +681,7 @@ export default function JobOfferView() {
               </DialogContentText>
 
               <Grid container spacing={2}>
-                {/* Nom complet */}
+                {/* Est-ce un partenaire E-Payment */}
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                   <FormLabel id="demo-controlled-radio-buttons-group">Est-ce un partenaire E-Payment</FormLabel>
                   <RadioGroup
@@ -654,49 +696,60 @@ export default function JobOfferView() {
                     </RadioGroup>
                 </Grid>
 
-                {/* Domaine */}
+                {/* Client ID */}
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                   <TextField
-                    value={configPartnerairChoice.domaine}
-                    onChange={(event) => changeConfigPartnerairChoice((oldConfig) => ({...oldConfig, domaine: event.target.value}))}
+                    value={configPartnerairChoice.x_user}
+                    onChange={(event) => changeConfigPartnerairChoice((oldConfig) => ({...oldConfig, x_user: event.target.value}))}
                     fullWidth
                     type='text'
-                    label="Url authorisé"
-                    name="domaine"
+                    label="Client ID"
+                    name="x_user"
                   />
                 </Grid>
-                {
-                  isMobileMoney.trim().toLocaleLowerCase() === 'non'
-                  && (
-                      <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                        <TextField
-                          value={configPartnerairChoice.url_generate_otp}
-                          onChange={(event) => changeConfigPartnerairChoice((oldConfig) => ({...oldConfig, url_generate_otp: event.target.value}))}
-                          fullWidth
-                          type='text'
-                          label="Url Otp"
-                          name="url_generate_otp"
-                        />
-                      </Grid>
-                  )
-                }
-                {
-                  isMobileMoney.trim().toLocaleLowerCase() === 'non'
-                  && (
-                      <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                        <TextField
-                          value={configPartnerairChoice.url_billing}
-                          onChange={(event) => changeConfigPartnerairChoice((oldConfig) => ({...oldConfig, url_billing: event.target.value}))}
-                          fullWidth
-                          type='text'
-                          label="Url Paiement"
-                          name="url_billing"
-                        />
-                      </Grid>
-                  )
-                }
 
-              </Grid>               
+                {/* Client Secret */}
+                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                  <TextField
+                    value={configPartnerairChoice.x_token}
+                    onChange={(event) => changeConfigPartnerairChoice((oldConfig) => ({...oldConfig, x_token: event.target.value}))}
+                    fullWidth
+                    type='text'
+                    label="Client Secret"
+                    name="x_token"
+                  />
+                </Grid>
+
+                {/* Url Otp - conditionnel */}
+                {isMobileMoney.trim().toLocaleLowerCase() === 'non' && (
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                    <TextField
+                      value={configPartnerairChoice.url_generate_otp}
+                      onChange={(event) => changeConfigPartnerairChoice((oldConfig) => ({...oldConfig, url_generate_otp: event.target.value}))}
+                      fullWidth
+                      type='text'
+                      label="Url Otp"
+                      name="url_generate_otp"
+                    />
+                  </Grid>
+                )}
+              </Grid>
+              
+              {/* Url Paiement - conditionnel */}
+              {isMobileMoney.trim().toLocaleLowerCase() === 'non' && (
+                <Grid container spacing={2}>
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                    <TextField
+                      value={configPartnerairChoice.url_billing}
+                      onChange={(event) => changeConfigPartnerairChoice((oldConfig) => ({...oldConfig, url_billing: event.target.value}))}
+                      fullWidth
+                      type='text'
+                      label="Url Paiement"
+                      name="url_billing"
+                    />
+                  </Grid>
+                </Grid>
+              )}               
             </DialogContent>
             <DialogActions>
               <Button onClick={handleToogleDialogCreateOrUpdateConfig}>Annuler</Button>
@@ -711,9 +764,16 @@ export default function JobOfferView() {
                 Veuillez faire entrer les Forfaits du compte
               </DialogContentText>
 
-              {forfaitsPartnerairChoice.map((forfait, index) => (
+              {forfaitsPartnerairChoice.map((forfait, index) => {
+                // Extraire le nombre de pièces de la période (ex: "10 PIECES" -> 10)
+                const nombrePieces = forfait.periode ? parseInt(forfait.periode.split(' ')[0], 10) || 0 : 0;
+                // Trouver la durée en jours correspondante
+                const periodeForfait = periodeForfaits.find(p => p.value === forfait.periode);
+                const durationForfait = periodeForfait?.durationForfait || forfait.durationForfait || 1;
+                
+                return (
                 <Grid container spacing={2} sx={{mt: 1}} key={`forfait-${index}`}>
-                {/* Nom complet */}
+                {/* Est-ce un freemium */}
                 <Grid size={{ xs: 12, sm: 3, md: 3 }}>
                   <FormLabel id="demo-controlled-radio-buttons-group">Est-ce un freemium</FormLabel>
                   <RadioGroup
@@ -728,8 +788,8 @@ export default function JobOfferView() {
                     </RadioGroup>
                 </Grid>
 
-                {/* Domaine */}
-                <Grid size={{ xs: 4, sm: 3, md: 3 }}>
+                {/* Prix du forfait */}
+                <Grid size={{ xs: 12, sm: 3, md: 3 }}>
                   <TextField
                     value={parseInt(forfait.price, 10)}
                     onChange={(event) => changeForfaitsPartnerairChoice(
@@ -752,48 +812,87 @@ export default function JobOfferView() {
                     name="price"
                   />
                 </Grid>
-                <Grid size={{ xs: 4, sm: 3, md: 3 }}>
-                  <FormControl fullWidth>
-                    <InputLabel id="demo-simple-select-label">Période du forfait</InputLabel>
-                    <Select
-                      labelId="demo-simple-select-label"
-                      id={`select-periode-forfait-${index}`}
-                      value={forfait.periode}
-                      label="Période du forfait"
-                      onChange={(event) => changeForfaitsPartnerairChoice(
+
+                {/* Nombre total de pièces */}
+                <Grid size={{ xs: 12, sm: 3, md: 3 }}>
+                  <TextField
+                    value={nombrePieces}
+                    onChange={(event) => {
+                      const newNombrePieces = Number.isInteger(Number(event.target.value)) && Number(event.target.value) >= 0 
+                        ? Number(event.target.value) 
+                        : 0;
+                      // Trouver la période correspondante ou créer une nouvelle valeur
+                      const periodeValue = `${newNombrePieces} PIECES`;
+                      const periodeForfaitFound = periodeForfaits.find(p => p.value === periodeValue);
+                      const newDurationForfait = periodeForfaitFound?.durationForfait || durationForfait;
+                      
+                      changeForfaitsPartnerairChoice(
                         (oldConfig) => 
                           oldConfig.map((oldForfait, idx) => {
                             if(idx === index) {
                               return {
                                 ...oldForfait,
-                                periode: event.target.value,
+                                periode: periodeValue,
+                                durationForfait: newDurationForfait,
                               }
                             }
                             return oldForfait;
                           })
-                      )}
+                      );
+                    }}
+                    fullWidth
+                    type='number'
+                    label="Nombre total de pièces"
+                    name="nombrePieces"
+                  />
+                </Grid>
+
+                {/* Période de forfait en jours */}
+                <Grid size={{ xs: 12, sm: 3, md: 3 }}>
+                  <FormControl fullWidth>
+                    <InputLabel id={`select-duration-forfait-${index}`}>Période de forfait</InputLabel>
+                    <Select
+                      labelId={`select-duration-forfait-${index}`}
+                      id={`select-duration-forfait-${index}`}
+                      value={durationForfait}
+                      label="Période de forfait"
+                      onChange={(event) => {
+                        const newDurationForfait = event.target.value;
+                        changeForfaitsPartnerairChoice(
+                          (oldConfig) => 
+                            oldConfig.map((oldForfait, idx) => {
+                              if(idx === index) {
+                                return {
+                                  ...oldForfait,
+                                  durationForfait: newDurationForfait,
+                                }
+                              }
+                              return oldForfait;
+                            })
+                        );
+                      }}
                     >
-                      {periodeForfaits.map((periode) => (
-                        <MenuItem key={`periode-forfait-${periode.value.replace(/\s+/g, '-')}`} value={periode.value}>{periode.label}</MenuItem>
+                      {periodeJours.map((periode) => (
+                        <MenuItem key={`periode-jours-${periode.value}`} value={periode.value}>{periode.label}</MenuItem>
                       ))}
                     </Select>
                   </FormControl>
-                  
                 </Grid>
-                <Grid size={{ xs: 4, sm: 3, md: 3 }}>
+
+                {/* Bouton supprimer */}
+                <Grid size={{ xs: 12, sm: 3, md: 3 }}>
                   <IconButton color="secondary" aria-label="add an alarm" onClick={() => changeForfaitsPartnerairChoice(
                     (oldConfig) => 
                       oldConfig.filter((_, idx) => idx !== index)
                   )}>
                     <DeleteTwoToneIcon color='danger' />
                   </IconButton>
-                  
                 </Grid>
               </Grid>
-              )
-              )}
+              );
+              })}
               <Stack mt={2} direction='row' alignItems='center' justifyContent='center'>
-                <Button variant='outlined' onClick={() => changeForfaitsPartnerairChoice((oldForfaits) => ([...oldForfaits, { periode: '', type: "E_PAYMENT", price: 0, freemium: false, durationForfait: 0, id: null }] ))} endIcon={<AddCircleTwoToneIcon />}>Ajouter un forfait</Button>
+                <Button variant='outlined' onClick={() => changeForfaitsPartnerairChoice((oldForfaits) => ([...oldForfaits, { periode: '0 PIECES', type: "E_PAYMENT", price: 0, freemium: false, durationForfait: 1, id: null }] ))} endIcon={<AddCircleTwoToneIcon />}>Ajouter un forfait</Button>
               </Stack>            
             </DialogContent>
             <DialogActions>

@@ -33,8 +33,8 @@ const navConfig = [
   },
   {
     title: 'Jeux',
-    path: routesName.games,
-    childrenPath: [routesName.games],
+    path: routesName.moovies,
+    childrenPath: [routesName.moovies],
     icon: icon('manette'),
     protected: [RoleEnum.SUPER_ADMIN],
   },

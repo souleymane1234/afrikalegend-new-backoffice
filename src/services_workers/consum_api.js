@@ -178,10 +178,10 @@ export default class ConsumApi {
     }
   }
 
-  static async getGames() {
+  static async getmoovies() {
     try {
       const token = AdminStorage.getTokenAdmin();
-        const response = await this.api.get(apiUrl.games, {headers: {'Authorization': token}});
+        const response = await this.api.get(apiUrl.moovies, {headers: {'Authorization': token}});
         if (response.status >= 200 && response.status < 400) {
           const { result:data , etat, message = ''} = response.data;
           if (etat) return data;
@@ -197,22 +197,45 @@ export default class ConsumApi {
     }
   }
 
-  static async getCategoriesGames() {
+  static async getCategoriesmoovies() {
     try {
       const token = AdminStorage.getTokenAdmin();
         const response = await this.api.get(apiUrl.category, {headers: {'Authorization': token}});
         if (response.status >= 200 && response.status < 400) {
-          const { result:data , etat, message = ''} = response.data;
-          if (etat) return data;
-          if(!etat && message.indexOf('token') !== -1) {
-            AdminStorage.clearStokage();
-            throw new Error('Session Expiré veuillez vous réconnecter');
+          // Nouvelle API peut retourner directement un tableau ou un objet avec result/etat
+          const responseData = response.data;
+          
+          // Si c'est directement un tableau
+          if (Array.isArray(responseData)) {
+            return responseData;
           }
-          throw new Error(message);
+          
+          // Si c'est le format ancien avec result/etat
+          if (responseData.result !== undefined) {
+            const { result:data , etat, message = ''} = responseData;
+            if (etat) return data;
+            if(!etat && message && message.indexOf('token') !== -1) {
+              AdminStorage.clearStokage();
+              throw new Error('Session Expiré veuillez vous réconnecter');
+            }
+            throw new Error(message || 'Erreur lors de la récupération des catégories');
+          }
+          
+          // Si c'est un autre format, retourner directement les données
+          return responseData;
         }
       throw new Error("Un problème avec le serveur. Veuillez réssayer ultérieurement");
     } catch (error) {
-      throw new Error("Un problème lors de l'envoie. Veuillez vérifier votre connexion internet");
+      console.error('Erreur getCategoriesmoovies:', error);
+      console.error('URL appelée:', apiUrl.category);
+      if (error.response?.status === 401 || error.message?.indexOf('token') !== -1) {
+        AdminStorage.clearStokage();
+        throw new Error('Session expirée, veuillez vous reconnecter');
+      }
+      if (error.response?.status === 404) {
+        throw new Error(`Endpoint non trouvé: ${apiUrl.category}. Vérifiez la configuration de l'API.`);
+      }
+      throw new Error(error.message || "Un problème lors de l'envoie. Veuillez vérifier votre connexion internet");
     }
   }
 
@@ -320,12 +343,12 @@ export default class ConsumApi {
     }
   }
 
-  static async createGame({ nameProfil, base64Profil, title, description, videoCover, covers, isPortrait, url, categories }) {
+  static async createGame({ nameProfil, base64Profil, title, description, trailler, covers, episodes, priceEpisode, categories }) {
     const token = AdminStorage.getTokenAdmin();
-    const body = { nameProfil, base64Profil, title, description, videoCover, covers, isPortrait, url, categories };
+    const body = { nameProfil, base64Profil, title, description, trailler, covers, episodes, priceEpisode, categories };
 
     try {
-      const response = await this.api.post(apiUrl.games, body, {
+      const response = await this.api.post(apiUrl.moovies, body, {
         headers: { 'Authorization': token }
       });
 
@@ -354,9 +377,9 @@ export default class ConsumApi {
     }
   }
   
-  static async createCategoryGames({ name, fileName, base64}) {
+  static async createCategorymoovies({ name}) {
     const token = AdminStorage.getTokenAdmin();
-    const body = { name, fileName, base64};
+    const body = { name};
 
     try {
       const response = await this.api.post(apiUrl.category, body, {
@@ -389,9 +412,9 @@ export default class ConsumApi {
 }
 
 
-  static async createOrUpdateConfigPartners({ domaine, url_generate_otp, url_billing, isMobileMoney, admin_id}) {
+  static async createOrUpdateConfigPartners({ domaine, url_generate_otp, url_billing, isMobileMoney, admin_id, client_id, client_secret}) {
     const token = AdminStorage.getTokenAdmin();
-    const body = { domaine, url_generate_otp, url_billing, isMobileMoney, admin_id };
+    const body = { domaine, url_generate_otp, url_billing, isMobileMoney, admin_id, client_id, client_secret };
     if (isMobileMoney) {
       delete body.url_generate_otp;
       delete body.url_billing;

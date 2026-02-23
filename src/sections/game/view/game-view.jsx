@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Menu, Flex, Image, Space, Table, Upload, message, Checkbox, Dropdown} from 'antd'
+import { Flex, Image, Space, Table, Upload, message, Checkbox, Dropdown} from 'antd'
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -27,10 +27,16 @@ import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import FormHelperText from '@mui/material/FormHelperText';
 import DialogContentText from '@mui/material/DialogContentText';
 import DeleteTwoToneIcon from '@mui/icons-material/DeleteTwoTone';
+import Radio from '@mui/material/Radio';
+import RadioGroup from '@mui/material/RadioGroup';
+import FormLabel from '@mui/material/FormLabel';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import AddCircleTwoToneIcon from '@mui/icons-material/AddCircleTwoTone';
+import IconButton from '@mui/material/IconButton';
 
 import { useRouter } from 'src/routes/hooks';
 
-import { useGames, useCreateGame,useCategoriesGames , useCreateCategoryGames } from 'src/hooks/use-games';
+import { usemoovies, useCreateGame,useCategoriesmoovies , useCreateCategorymoovies } from 'src/hooks/use-games';
 
 import { getSrcFromFile, onPreviewCompetitionCover } from 'src/utils/traitement-file';
 
@@ -68,61 +74,60 @@ export default function GameView() {
   const [messageApi, contextMessageHolder] = message.useMessage();
   const [fileList, setFileList] = useState([]);
   const [fileListProfil, setFileListProfil] = useState([]);
-  const [fileListCategory, setFileListCategory] = useState([]);
-  const [nameFileCategorieGameUploadBase64, changeNameFileCategorieGameUploadBase64] = useState('');
-  const [base64CategorieGame, changeBase64CategorieGame] = useState('');
   const [nameCovers, changeNameCovers] = useState([]);
   const [nameProfil, changeNameProfil] = useState([]);
   const [categorieGameChoice, changeCategorieGameChoice] = useState([]);
   const [base64Files, changeBase64Files] = useState([]);
   const [base64Profil, changeBase64Profil] = useState([]);
   const [openCreateGame, setOpenCreateGame] = useState(false);
-  const [isPortraitMode, setIsPortraitMode] = useState(false);
   const [title, changeTitle] = useState('');
   const [nameCategory, changeNameCategory] = useState('');
-  const [videoCover, changeVideoCover] = useState('');
-  const [urlGame, changeUrlGame] = useState('');
+  const [trailler, changeTrailler] = useState('');
+  const [priceEpisode, changePriceEpisode] = useState('25');
   const [description, changeDescription] = useState('');
-  const { data: categories, isLoading:isLoadingCategory, isError: isErrorCategoryGame, error: errorCategoryGame, refetch: refetchCategoryGame} = useCategoriesGames();
-  const { data: games, isLoading:isLoadingGame, isError: isErrorGame, error: errorGame, refetch: refetchGame} = useGames();
+  const [episodes, changeEpisodes] = useState([]);
+  const { data: categories, isLoading:isLoadingCategory, isError: isErrorCategoryGame, error: errorCategoryGame, refetch: refetchCategoryGame} = useCategoriesmoovies();
+  const { data: moovies, isLoading:isLoadingGame, isError: isErrorGame, error: errorGame, refetch: refetchGame} = usemoovies();
   
   const { mutate: createGameMutation, isLoading: isCreatingGame } = useCreateGame();
-  const { mutate: createCategoryGameMutation, isLoading: isCreatingCategory } = useCreateCategoryGames();
+  const { mutate: createCategoryGameMutation, isLoading: isCreatingCategory } = useCreateCategorymoovies();
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [router]);
 
-  const handleToogleDialogCreateGames = () => {
+  const handleToogleDialogCreatemoovies = () => {
     setOpenCreateGame((prev) => !prev);
   };
 
   const columns = [
     {
-        title: 'Image',
-        dataIndex: 'urlImage',
-      key: 'urlImage',
-        width: 110,
-        render: (urlImage) => (
-          <Image
-            style={{borderRadius: 10}}
-              width={100}
-              src={`${apiUrlAsset.categories}/${urlImage}`}
-            />
-          ),
-      },
-    {
       title: 'Nom',
-      dataIndex: 'name',
-      key: 'name',
-      sorter: (a, b) => a.name.localeCompare(b.name),
+      dataIndex: 'title',
+      key: 'title',
+      sorter: (a, b) => (a.title || a.name || '').localeCompare(b.title || b.name || ''),
+      render: (_, record) => record.title || record.name || '',
+    },
+    {
+      title: 'Date de création',
+      dataIndex: 'created_at',
+      key: 'created_at',
+      sorter: (a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0),
+      render: (created_at) => created_at ? new Date(created_at).toLocaleDateString('fr-FR') : '-',
+    },
+    {
+      title: 'Date de modification',
+      dataIndex: 'updated_at',
+      key: 'updated_at',
+      sorter: (a, b) => new Date(a.updated_at || 0) - new Date(b.updated_at || 0),
+      render: (updated_at) => updated_at ? new Date(updated_at).toLocaleDateString('fr-FR') : '-',
     },
     {
       title: 'Action',
       key: 'id',
       render: (_, {id}) => (
         <Space size="middle">
-            <Dropdown overlay={menuItems(id)} trigger={['click']}>
+            <Dropdown menu={{ items: menuItems(id) }} trigger={['click']}>
               <span
                 role="button"
                 style={{cursor: 'pointer'}}
@@ -143,25 +148,26 @@ export default function GameView() {
     },
   ];
 
-  const menuItems = (id) => (
-      <Menu>
-        <Menu.Item className='hover-danger' key={`removeItem${id}`} onClick={() => console.log(id)}>
-              <Flex gap='middle' align='center' justify='space-between'>
-                  Supprimer <DeleteTwoToneIcon sx={{color: red[500]}}/>
-              </Flex>
-          </Menu.Item>
-        
-          
-      </Menu>
-  )
+  const menuItems = (id) => [
+    {
+      key: `removeItem${id}`,
+      label: (
+        <Flex gap='middle' align='center' justify='space-between'>
+          Supprimer <DeleteTwoToneIcon sx={{color: red[500]}}/>
+        </Flex>
+      ),
+      onClick: () => console.log(id),
+      className: 'hover-danger',
+    },
+  ]
 
-  const createGames = async () => {
+  const createmoovies = async () => {
     const categoriesFilter = categorieGameChoice.map(category => {
-      const categoryFound = categories.find(cat => cat.name === category);
+      const categoryFound = (categories && Array.isArray(categories)) ? categories.find(cat => cat.title === category || cat.name === category) : null;
       return categoryFound ? categoryFound.id : null;
     }).filter(id => id !== null);
     const isReady = [title.trim(), description.trim()].filter(verification => verification.length < 3).length === 0
-    if (isReady && fileList.length > 0 && fileListProfil.length > 0 && categoriesFilter.length > 0) {
+    if (isReady && fileList.length > 0 && fileListProfil.length > 0 && categoriesFilter.length > 0 && episodes.length > 0) {
       const covers = nameCovers.map((fileName, index) => ({
           fileName,
           base64: base64Files[index],
@@ -173,62 +179,64 @@ export default function GameView() {
             base64Profil: base64Profil[0],
             title,
             description,
+            trailler,
             covers,
-            isPortrait: isPortraitMode,
-            videoCover,
-            url: urlGame,
+            episodes: episodes.map(({moovie_id, url, isPublic}) => ({
+              moovie_id: moovie_id || null,
+              url: url || '',
+              isPublic: isPublic || false
+            })),
+            priceEpisode: parseInt(priceEpisode, 10) || 25,
             categories: categoriesFilter,
           }, {
             onSuccess: async () => {
-              handleToogleDialogCreateGames();
+              handleToogleDialogCreatemoovies();
               setFileList([]);
               changeBase64Files([]);
               changeNameCovers([]);
               changeDescription('');
               changeTitle('');
-              changeVideoCover('');
+              changeTrailler('');
+              changePriceEpisode('25');
+              changeEpisodes([]);
               await refetch();
               messageApi.destroy();
-              messageApi.success("Jeux créé avec succès !");
+              messageApi.success("Film créé avec succès !");
             },
             onError: (e) => {
+              messageApi.destroy();
               messageApi.error(e.message);
             }
           }
         );
         
       } else {
-        messageApi.error("Veuillez renseigner les informations correctement");
+        messageApi.error("Veuillez renseigner les informations correctement (titre, description, poster, couvertures, catégories et au moins un épisode)");
       }
   }
-  const createCategoryGames = async () => {
-  
-    const isReady = [nameCategory.trim()].filter(verification => verification.length < 3).length === 0
-    if (isReady && fileListCategory.length > 0) {
+  const createCategorymoovies = async () => {
+    const isReady = [nameCategory.trim()].filter(verification => verification.length < 3).length === 0;
+    if (isReady) {
         messageApi.loading("Création en cours");
         createCategoryGameMutation(
           {
-            name: nameCategory.trim(),
-            fileName: nameFileCategorieGameUploadBase64,
-            base64:base64CategorieGame
+            name: nameCategory.trim()
           }, {
             onSuccess: async () => {
-              setFileListCategory([]);
-              changeBase64CategorieGame('');
-              changeNameFileCategorieGameUploadBase64('');
               changeNameCategory('');
               await refetch();
               messageApi.destroy();
               messageApi.success("Catégorie créé avec succès !");
             },
             onError: (e) => {
+              messageApi.destroy();
               messageApi.error(e.message);
             }
           }
         );
         
       } else {
-        messageApi.error("Veuillez renseigner les informations correctement");
+        messageApi.error("Veuillez renseigner le nom de la catégorie");
       }
   }
   
@@ -255,19 +263,6 @@ export default function GameView() {
   }
   };
 
-  const onChangeCategorieGameCover = ({ fileList: newFileList }) => {
-    setFileListCategory(newFileList);
-    if (newFileList.length > 0) {
-      const nameFile = `${newFileList[0].uid}.${newFileList[0].type.split('/')[1]}`;
-      changeNameFileCategorieGameUploadBase64(nameFile);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = reader.result;
-        changeBase64CategorieGame(base64String);
-      };
-      reader.readAsDataURL(newFileList[0].originFileObj);
-    }
-  };
 
   const handleChangeCategorieChoice = event => {
     const {
@@ -291,6 +286,7 @@ export default function GameView() {
   if (isErrorCategoryGame) {
     console.error("Erreur lors de la récupération des catégories jeux :", errorCategoryGame.message);
   }
+
   return (
     <Container maxWidth='xl'>
       {contextMessageHolder}
@@ -298,26 +294,6 @@ export default function GameView() {
         <Typography variant="h4">Gestions Cartegorie Jeux</Typography>
         <Typography variant="subtitle1">Créer une nouvelle cartegorie de jeux</Typography>
         <Grid container spacing={3} sx={{ my: 2 }} >
-          <Grid size={{ xs: 6, sm: 4, md: 3 }}>
-            <Upload
-                      listType="picture"
-                      accept='image/png, image/jpeg, image/webp'
-                      fileList={fileListCategory}
-                beforeUpload={() => false}
-                maxCount={1}
-                      onChange={onChangeCategorieGameCover}
-                      onPreview={onPreviewCompetitionCover}
-                >
-                      {fileListCategory.length < 1 && (
-                      <Box component='div' sx={{width: '100%', border: 'dashed #e0e0e0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection:'column', padding: 2, cursor: 'pointer'}}>
-                          <Iconify icon="openmoji:picture" />
-                        <span className="ant-upload-text">Charger la photo de la categorie</span>
-                        
-                      </Box>
-                      )
-                 }
-                </Upload>
-          </Grid>
           <Grid size={{ xs: 6, sm: 4, md: 3 }}>
             <TextField
                       value={nameCategory}
@@ -329,7 +305,7 @@ export default function GameView() {
           </Grid>
           <Grid size={{ xs: 6, sm: 4, md: 3 }}>
             <Button variant="contained" disabled={isCreatingCategory} color="inherit" startIcon={<Iconify icon="eva:plus-fill" />}
-              onClick={createCategoryGames}
+              onClick={createCategorymoovies}
               >
               Enregistrer cette catégorie
             </Button>
@@ -339,8 +315,9 @@ export default function GameView() {
           <Grid size={{ xs: 12, sm: 12, md: 12 }}  >
             <Table
               pagination={{pageSize: 4}}
-                        dataSource={categories}
+                        dataSource={categories && Array.isArray(categories) ? categories.map((cat, index) => ({ ...cat, key: cat.id || `category-${index}` })) : []}
                         columns={columns}
+                        rowKey={(record) => record.id || record.key}
                       />
             </Grid>
         </Grid>
@@ -349,9 +326,9 @@ export default function GameView() {
         <Typography variant="h4">Gestions Jeux</Typography>
 
         <Button variant="contained" color="inherit" startIcon={<Iconify icon="eva:plus-fill" />}
-        onClick={handleToogleDialogCreateGames}
+        onClick={handleToogleDialogCreatemoovies}
         >
-          Ajouter un jeu
+          Ajouter un film
         </Button>
       </Stack>
 
@@ -377,13 +354,35 @@ export default function GameView() {
           </Grid>
         ))
         :
-        games.map((game, index) => (
-          <PostCard key={game.id} game={game} index={index} />
-        ))}
+        isErrorGame ? (
+          <Grid size={{xs: 12}}>
+            <Box sx={{width: '100%', textAlign: 'center', mt: 5}}>
+              <Typography variant="h5" color="error">
+                Erreur lors du chargement des jeux
+              </Typography>
+              <Typography variant="body1" sx={{mt: 2}}>
+                {errorGame?.message || "Une erreur s'est produite"}
+              </Typography>
+            </Box>
+          </Grid>
+        ) : (
+          (moovies && Array.isArray(moovies) && moovies.length > 0) ? moovies.map((game, index) => (
+            <PostCard key={game.id} game={game} index={index} />
+          )) : (
+            <Grid size={{xs: 12}}>
+              <Box sx={{width: '100%', textAlign: 'center', mt: 5}}>
+                <Typography variant="body1">
+                  Aucun jeu disponible
+                </Typography>
+              </Box>
+            </Grid>
+          )
+        )
+        }
       </Grid>
-      <Dialog maxWidth="xl" fullWidth disableEscapeKeyDown open={openCreateGame} onClose={handleToogleDialogCreateGames}>
+      <Dialog maxWidth="xl" fullWidth disableEscapeKeyDown open={openCreateGame} onClose={handleToogleDialogCreatemoovies}>
             <DialogTitle>
-              Nouveau jeu
+              Nouveau film
             </DialogTitle>
 
             <DialogContent>
@@ -391,7 +390,7 @@ export default function GameView() {
               <Grid container spacing={1}>
             <Grid size={{ xs: 12, sm: 6, md: 6 }}>
               <DialogContentText sx={{ mb: 3 }}>
-                Veuillez sélectionner les catégories du jeu
+                Veuillez sélectionner les catégories du film
               </DialogContentText>
               <Box component='div' sx={{ width: '80%' }}>
                   {!isLoadingCategory && <FormControl sx={{ m: 1, width: '100%' }}>
@@ -413,22 +412,25 @@ export default function GameView() {
                       )}
                       MenuProps={MenuProps}
                     >
-                      {categories.map((category) => (
+                      {(categories && Array.isArray(categories)) ? categories.map((category) => {
+                        const categoryTitle = category.title || category.name || '';
+                        return (
                         <MenuItem
                           key={category.id}
-                          value={category.name}
-                          style={getStyles(category.name, categorieGameChoice, theme)}
+                          value={categoryTitle}
+                          style={getStyles(categoryTitle, categorieGameChoice, theme)}
                         >
-                          {category.name}
+                          {categoryTitle}
                         </MenuItem>
-                      ))}
+                      );
+                      }) : null}
                     </Select>
                     <FormHelperText>Vous pouvez en choisir plusieurs</FormHelperText>
                   </FormControl>}
                     
               </Box>
               <DialogContentText sx={{ my: 3 }}>
-                L&apos;icone du jeu
+                Poster
               </DialogContentText>
                   <Box component='div' sx={{ width: '100%' }}>
                     <Upload
@@ -442,7 +444,7 @@ export default function GameView() {
                             {fileListProfil.length < 1 && (
                             <Box component='div' sx={{width: 200, border: 'dashed #e0e0e0', borderRadius: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection:'column', padding: 2, cursor: 'pointer'}}>
                                 <Iconify icon="openmoji:picture" />
-                              <span className="ant-upload-text">Charger l&apos;icone ici</span>
+                              <span className="ant-upload-text">Charger le poster ici</span>
                               
                             </Box>
                             )
@@ -482,28 +484,29 @@ export default function GameView() {
                       value={title}
                       onChange={(event) => changeTitle(event.target.value)}
                       fullWidth
-                    label="Titre du jeu"
+                    label="Titre du film"
                     required
                     name="title" />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 12, md: 12 }} marginTop={1}>
                     <TextField
-                      value={videoCover}
-                      onChange={(event) => changeVideoCover(event.target.value)}
+                      value={trailler}
+                      onChange={(event) => changeTrailler(event.target.value)}
                     fullWidth
                     placeholder='https://www.youtube.com/watch?v=riCP9x31Kuk'
-                      label="URL youtube de la vidéo de couverture"
-                    name="videoCover" />
+                      label="Trailer"
+                    name="trailler" />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 12, md: 12 }} marginTop={1}>
                     <TextField
-                      value={urlGame}
-                      onChange={(event) => changeUrlGame(event.target.value)}
+                      value={priceEpisode}
+                      onChange={(event) => changePriceEpisode(event.target.value)}
                     fullWidth
-                    placeholder='https://bomber-fish.booz-game.com'
-                    label="URL du jeu"
-                    required
-                    name="urlGame" />
+                    type="number"
+                    placeholder='25'
+                    label="Prix de l'épisode"
+                    disabled
+                    name="priceEpisode" />
                 </Grid>
                 <Grid size={{ xs: 12, sm: 12, md: 12 }} marginTop={1}>
                     <TextField
@@ -516,13 +519,78 @@ export default function GameView() {
                       name="description"
                       required
                   />
-                  <Checkbox
-                    checked={isPortraitMode}
-                    onChange={(e) => setIsPortraitMode(e.target.checked)}
-                  >
-                    Le jeu est en mode portrait.
-                  </Checkbox>
                 </Grid>
+              </Grid>
+            </Grid>
+
+            {/* Section Épisodes */}
+            <Grid container spacing={2} sx={{ mt: 2 }}>
+              <Grid size={{ xs: 12 }}>
+                <DialogContentText sx={{ mb: 2 }}>
+                  Épisodes
+                </DialogContentText>
+              </Grid>
+              {episodes.map((episode, index) => (
+                <Grid container spacing={2} sx={{ mt: 1 }} key={`episode-${index}`}>
+                  <Grid size={{ xs: 12, sm: 9, md: 10 }}>
+                    <TextField
+                      value={episode.url || ''}
+                      onChange={(event) => changeEpisodes(
+                        (oldEpisodes) => 
+                          oldEpisodes.map((oldEpisode, idx) => {
+                            if(idx === index) {
+                              return {
+                                ...oldEpisode,
+                                url: event.target.value,
+                              }
+                            }
+                            return oldEpisode;
+                          })
+                      )}
+                      fullWidth
+                      label="URL de l'épisode"
+                      placeholder="https://example.com/episode-1"
+                      name={`episode-url-${index}`}
+                    />
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 2, md: 1 }}>
+                    <FormLabel id={`episode-public-${index}`}>Public</FormLabel>
+                    <RadioGroup
+                      row
+                      aria-labelledby={`episode-public-${index}`}
+                      name={`episode-public-${index}`}
+                      value={episode.isPublic ? 'oui' : 'non'}
+                      onChange={(event) => changeEpisodes(
+                        (oldEpisodes) => 
+                          oldEpisodes.map((oldEpisode, idx) => {
+                            if(idx === index) {
+                              return {
+                                ...oldEpisode,
+                                isPublic: event.target.value === 'oui',
+                              }
+                            }
+                            return oldEpisode;
+                          })
+                      )}
+                    >
+                      <FormControlLabel value="oui" control={<Radio />} label="Oui" />
+                      <FormControlLabel value="non" control={<Radio />} label="Non" />
+                    </RadioGroup>
+                  </Grid>
+                  <Grid size={{ xs: 12, sm: 1, md: 1 }}>
+                    <IconButton color="secondary" aria-label="supprimer épisode" onClick={() => changeEpisodes(
+                      (oldEpisodes) => 
+                        oldEpisodes.filter((_, idx) => idx !== index)
+                    )}>
+                      <DeleteTwoToneIcon color='danger' />
+                    </IconButton>
+                  </Grid>
+                </Grid>
+              ))}
+              <Grid size={{ xs: 12 }}>
+                <Stack mt={2} direction='row' alignItems='center' justifyContent='center'>
+                  <Button variant='outlined' onClick={() => changeEpisodes((oldEpisodes) => ([...oldEpisodes, { moovie_id: null, url: '', isPublic: false }] ))} endIcon={<AddCircleTwoToneIcon />}>Ajouter un épisode</Button>
+                </Stack>
               </Grid>
             </Grid>
 
@@ -532,8 +600,8 @@ export default function GameView() {
             </DialogContent>
 
             <DialogActions>
-              <Button onClick={handleToogleDialogCreateGames}>Annuler</Button>
-              <Button variant="contained" onClick={createGames} disabled={isCreatingGame} startIcon={isCreatingGame && <AutorenewIcon />} >{isCreatingGame ? "Enregistrement": 'Enregistrer'}</Button>
+              <Button onClick={handleToogleDialogCreatemoovies}>Annuler</Button>
+              <Button variant="contained" onClick={createmoovies} disabled={isCreatingGame} startIcon={isCreatingGame && <AutorenewIcon />} >{isCreatingGame ? "Enregistrement": 'Enregistrer'}</Button>
             </DialogActions>
           </Dialog>
     </Container>

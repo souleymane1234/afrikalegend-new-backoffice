@@ -26,9 +26,9 @@ const createPartner = async ({ full_name, logo, number, email, password, role })
     throw new Error(error.message);
   }
 };
-const createOrUpdateConfigPartner = async ({ domaine, url_generate_otp, url_billing, isMobileMoney, admin_id}) => {
+const createOrUpdateConfigPartner = async ({ domaine, url_generate_otp, url_billing, isMobileMoney, admin_id, client_id, client_secret}) => {
   try {
-    return await ConsumApi.createOrUpdateConfigPartners({ domaine, url_generate_otp, url_billing, isMobileMoney, admin_id});
+    return await ConsumApi.createOrUpdateConfigPartners({ domaine, url_generate_otp, url_billing, isMobileMoney, admin_id, client_id, client_secret});
   } catch (error) {
     throw new Error(error.message);
   }

@@ -10,7 +10,7 @@ export const routesName = {
     users: '/users',
     events: '/events',
     formations: '/formations',
-    games: '/games',
+    moovies: '/moovies',
     campagnes: '/campagnes',
     user: '/user',
     login: '/login',
