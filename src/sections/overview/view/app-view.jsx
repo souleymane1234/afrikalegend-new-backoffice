@@ -87,7 +87,7 @@ export default function AppView() {
       <Grid container spacing={1}>
         <Grid size={{xs:12, sm:6, md:3}}>
           <AppWidgetSummary
-            title="Total de jeux"
+            title="Total de films"
             total={totalGame}
             color="error"
             icon={<img alt="icon" src="/assets/icons/glass/ic_glass_message.png" />}
@@ -163,8 +163,8 @@ export default function AppView() {
 
         <Grid size={{xs:12, md:6, lg:8}}>
           <AppConversionRates
-            title="Classement des jeux les plus joués"
-            subheader="Vision globale sur les jeux les plus joués par session"
+            title="Classement des films les plus vues"
+            subheader="Vision globale sur les films les plus vues"
             chart={{
               series: rankingGame,
             }}

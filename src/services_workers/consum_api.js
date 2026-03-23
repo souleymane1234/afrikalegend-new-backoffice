@@ -159,13 +159,26 @@ export default class ConsumApi {
     }
   }
 
-  static async getPartners() {
+  static async getPartners(role = null) {
     try {
       const token = AdminStorage.getTokenAdmin();
-        const response = await this.api.get(apiUrl.partners, {headers: {'Authorization': token}});
+      const params = role ? { role } : {};
+      const response = await this.api.get(apiUrl.partners, {
+        headers: { 'Authorization': token },
+        params,
+      });
         if (response.status >= 200 && response.status < 400) {
           const { result:data , etat, message = ''} = response.data;
-          if (etat) return data;
+          if (etat) {
+            // Normalisation des champs attendus par l'UI (API: full_name, UI: fullName)
+            if (Array.isArray(data)) {
+              return data.map((p) => ({
+                ...p,
+                fullName: p.fullName ?? p.full_name ?? '',
+              }));
+            }
+            return data;
+          }
           if(!etat && message.indexOf('token') !== -1) {
             AdminStorage.clearStokage();
             throw new Error('Session Expiré veuillez vous réconnecter');
@@ -370,10 +383,63 @@ export default class ConsumApi {
       }
     } catch (error) {
       console.error(error.response?.data || error.message, 'Erreur lors de la création du jeu');
-      throw new Error(
+        throw new Error(
         error.response?.data?.message ||
         "Erreur lors de l'envoi des données. Vérifiez votre connexion internet."
       );
+    }
+  }
+
+  static _getMessageFromResponse(res) {
+    if (!res) return '';
+    const raw = res.message ?? res.error ?? res.msg ?? res.detail ?? res.reason ?? res.statusMessage;
+    if (typeof raw === 'string') return raw;
+    if (Array.isArray(raw)) return raw.map((e) => (typeof e === 'string' ? e : e?.message ?? e?.msg)).filter(Boolean).join('. ');
+    if (raw && typeof raw === 'object' && (raw.message || raw.msg)) return raw.message || raw.msg;
+    if (Array.isArray(res?.errors)) return res.errors.map((e) => e.message || e.msg || e).filter(Boolean).join('. ');
+    if (res?.errors && typeof res.errors === 'object') return Object.entries(res.errors).map(([k, v]) => `${k}: ${v}`).join('. ');
+    return '';
+  }
+
+  static async updateGame(id, body) {
+    const token = AdminStorage.getTokenAdmin();
+    const url = `${apiUrl.moovies}/${id}`;
+    console.log('PUT updateGame', url, body);
+    try {
+      const response = await this.api.put(url, body, {
+        headers: { 'Authorization': token }
+      });
+
+      if (response.status >= 200 && response.status < 400) {
+        const res = response.data;
+        const message = ConsumApi._getMessageFromResponse(res);
+        const data = res?.result ?? res?.data ?? res;
+        const success = res?.etat === true;
+
+        if (success) {
+          return data != null ? data : res;
+        }
+
+        if (message?.toLowerCase().includes('token')) {
+          AdminStorage.clearStokage();
+          throw new Error("Session expirée, veuillez vous reconnecter.");
+        }
+
+        let errMsg = message.trim() || JSON.stringify(res);
+        if (errMsg.includes('Aucune création') || errMsg.includes('aucune création')) {
+          errMsg = `Le serveur a répondu : « ${errMsg} ». La route PUT /moovies/{id} doit mettre à jour le film existant en base, pas appeler la logique de création. À corriger côté backend.`;
+        }
+        console.warn('updateGame backend etat=false:', res);
+        throw new Error(errMsg);
+      } else {
+        const msg = ConsumApi._getMessageFromResponse(response.data);
+        throw new Error(msg || "Problème de communication avec le serveur. Veuillez réessayer ultérieurement.");
+      }
+    } catch (error) {
+      const res = error.response?.data;
+      const msg = ConsumApi._getMessageFromResponse(res) || error.message;
+      console.error('Erreur updateGame:', res ?? error.message);
+      throw new Error(msg || "Erreur lors de la mise à jour du film. Vérifiez votre connexion.");
     }
   }
   
@@ -502,8 +568,15 @@ export default class ConsumApi {
           return {success: false, error: response.data.error[0]}
           
       } catch (error) {
-        const {message} = error.response.data
-        return {success: false, error: message[0]}
+        // Dans le cas DNS / réseau, `error.response` peut être undefined.
+        const res = error.response?.data;
+        const message =
+          res?.message?.[0] ??
+          res?.message ??
+          res?.error?.[0] ??
+          res?.error ??
+          error.message;
+        return { success: false, error: message };
       }
   }
 
@@ -520,8 +593,14 @@ export default class ConsumApi {
           return {success: false, error: response.data.error[0]}
           
       } catch (error) {
-        const {message} = error.response.data
-        return {success: false, error: message[0]}
+        const res = error.response?.data;
+        const message =
+          res?.message?.[0] ??
+          res?.message ??
+          res?.error?.[0] ??
+          res?.error ??
+          error.message;
+        return {success: false, error: message}
       }
   }
 
@@ -540,8 +619,14 @@ export default class ConsumApi {
         return {success: false, error: response.data.error[0]}
         
     } catch (error) {
-      const {message} = error.response.data
-      return {success: false, error: message[0]}
+      const res = error.response?.data;
+      const message =
+        res?.message?.[0] ??
+        res?.message ??
+        res?.error?.[0] ??
+        res?.error ??
+        error.message;
+      return {success: false, error: message[0] ?? message}
     }
 }
 

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import {Tag, Flex, Menu, Badge, Table, Space, message, Divider, Dropdown, Typography as Typo} from 'antd'
 
 import Card from '@mui/material/Card';
@@ -42,10 +43,10 @@ import { useRouter } from 'src/routes/hooks';
 import { usePartners, useCreatePartner, useCreateOrUpdateConfigPartner, useCreateOrUpdateForfaitPartner } from 'src/hooks/use-partners';
 
 // import {apiUrlAsset} from 'src/constants/apiUrl';
+import { RoleEnum } from 'src/enum/RoleEnum';
 import ConsumApi from 'src/services_workers/consum_api';
 import { useAdminStore } from 'src/store/useAdminStore';
 import { periodeForfaits } from 'src/constants/periodeForfait';
-import { RoleEnum } from 'src/enum/RoleEnum';
 import { apiUrlAsset, apiUrlConsulteRessource } from 'src/constants/apiUrl';
 
 // Périodes de forfait en jours
@@ -66,9 +67,18 @@ const { Text } = Typo
 // ----------------------------------------------------------------------
 
 export default function JobOfferView() {
-  
+  const location = useLocation();
+  const isProductionHouse = location.pathname.includes('maison-de-production');
   const router = useRouter();
   const { admin } = useAdminStore();
+
+  const labels = {
+    listTitle: isProductionHouse ? 'Liste Maisons de Production' : 'Liste Partenaires',
+    createOne: isProductionHouse ? 'Créer une Maison de Production' : 'Créer un Partenaire',
+    newOne: isProductionHouse ? 'Nouvelle Maison de Production' : 'Nouveau partenaire',
+    createdSuccess: isProductionHouse ? 'Maison de Production créée avec succès !' : 'Partenaire créé avec succès !',
+    ePayment: isProductionHouse ? 'Est-ce une Maison de Production E-Payment' : 'Est-ce un partenaire E-Payment',
+  };
   const [isMobileMoney, setIsMobileMoney] = useState('non');
   const [showPassword, setShowPassword] = useState(false);
   const [openCreatePartner, setOpenCreatePartner] = useState(false);
@@ -93,7 +103,9 @@ export default function JobOfferView() {
   const [email, changeEmail] = useState('');
   const [fullName, changeFullName] = useState('');
   const [password, changePassword] = useState('');
-  const { data: partners, isLoading, isError, error, refetch } = usePartners();
+  const { data: partners, isLoading, isError, error, refetch } = usePartners(
+    isProductionHouse ? RoleEnum.ADMIN_PRODUCTION : RoleEnum.ADMIN_PARTENAIRE
+  );
   const { mutate: createPartnersMutation, isLoading: isCreating } = useCreatePartner();
   const { mutate: createOrUpdateConfigPartner, isLoading: isUpdatingConfig } = useCreateOrUpdateConfigPartner();
   const { mutate: createOrUpdateForfaitPartners, isLoading: isUpdatingForfaits } = useCreateOrUpdateForfaitPartner();
@@ -346,6 +358,12 @@ export default function JobOfferView() {
 
   const isReady = [fullName.trim(), logo.trim(), email.trim(), password.trim(), numberTel.trim()].filter(verification => verification.length < 3).length === 0
     if(isReady) {
+      let partnerRole = RoleEnum.ADMIN_SECOND_GESTION_PARTENAIRE;
+      if (isProductionHouse) {
+        partnerRole = RoleEnum.ADMIN_PRODUCTION;
+      } else if (admin.role === RoleEnum.SUPER_ADMIN) {
+        partnerRole = RoleEnum.ADMIN_PARTENAIRE;
+      }
       messageApi.loading("Création en cours");
       createPartnersMutation(
         {
@@ -354,7 +372,7 @@ export default function JobOfferView() {
           email: email.trim(),
           password: password.trim(),
           number: numberTel.trim(),
-          role: admin.role === RoleEnum.SUPER_ADMIN ? RoleEnum.ADMIN_PARTENAIRE : RoleEnum.ADMIN_SECOND_GESTION_PARTENAIRE
+          role: partnerRole
         }, {
           onSuccess: async () => {
             handleToogleDialogCreatePartners();
@@ -364,7 +382,7 @@ export default function JobOfferView() {
             changePassword('');
             await refetch();
             messageApi.destroy();
-            messageApi.success("Partenaire créé avec succès !");
+            messageApi.success(labels.createdSuccess);
           },
           onError: (e) => {
             messageApi.error(e.message);
@@ -475,8 +493,8 @@ export default function JobOfferView() {
       {contextMessageHolder}
       <Box>
         <Stack direction='row' alignItems='center' justifyContent='space-between'>
-          <Typography variant="h4" sx={{ mb: 5 }}>Liste Partenaires</Typography>
-          <Button onClick={handleToogleDialogCreatePartners}>{ admin && admin.role === RoleEnum.SUPER_ADMIN ? "Créer un Partenaire":  "Ajouter un sous-compte"}</Button>
+          <Typography variant="h4" sx={{ mb: 5 }}>{labels.listTitle}</Typography>
+          <Button onClick={handleToogleDialogCreatePartners}>{ admin && admin.role === RoleEnum.SUPER_ADMIN ? labels.createOne : "Ajouter un sous-compte"}</Button>
         </Stack>
         
       </Box>
@@ -574,7 +592,7 @@ export default function JobOfferView() {
 
           <Dialog maxWidth="xl" fullWidth disableEscapeKeyDown open={openCreatePartner} onClose={handleToogleDialogCreatePartners}>
             <DialogTitle>
-              {admin && admin.role === RoleEnum.SUPER_ADMIN ? "Nouveau partenaire" : "Ajouter Sous-compte"}
+              {admin && admin.role === RoleEnum.SUPER_ADMIN ? labels.newOne : "Ajouter Sous-compte"}
             </DialogTitle>
 
             <DialogContent>
@@ -683,7 +701,7 @@ export default function JobOfferView() {
               <Grid container spacing={2}>
                 {/* Est-ce un partenaire E-Payment */}
                 <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                  <FormLabel id="demo-controlled-radio-buttons-group">Est-ce un partenaire E-Payment</FormLabel>
+                  <FormLabel id="demo-controlled-radio-buttons-group">{labels.ePayment}</FormLabel>
                   <RadioGroup
                     row
                       aria-labelledby="demo-controlled-radio-buttons-group"

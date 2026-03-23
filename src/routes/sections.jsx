@@ -42,6 +42,7 @@ export default function Router() {
         { element: <IndexPage />, index: true },
         { path: routesName.user, element: <UserPage /> },
         { path: routesName.partners, element: <JobOfferPage /> },
+        { path: routesName.productionHouse, element: <JobOfferPage /> },
         { path: routesName.campagnes, element: <VotingPage /> },
         { path: routesName.users, element: <VotingPage /> },
         { path: routesName.moovies, element: <GamePage /> },

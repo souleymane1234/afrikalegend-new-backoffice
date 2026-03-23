@@ -53,8 +53,20 @@ const createCategorymoovies = async ({ name}) => {
   }
 };
 
+const updateGame = async (id, body) => {
+  try {
+    return await ConsumApi.updateGame(id, body);
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
 export const useCreateGame = () => useMutation({
   mutationFn: createGame,
+});
+
+export const useUpdateGame = () => useMutation({
+  mutationFn: ({ id, ...body }) => updateGame(id, body),
 });
 
 export const useCreateCategorymoovies = () => useMutation({

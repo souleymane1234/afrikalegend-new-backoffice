@@ -14,7 +14,7 @@ const navConfig = [
     path: routesName.dashboardGlobal,
     childrenPath: [routesName.dashboardGlobal],
     icon: icon('ic_analytics'),
-    protected: [RoleEnum.ADMIN_PARTENAIRE],
+    protected: [RoleEnum.ADMIN_PARTENAIRE, RoleEnum.ADMIN_PRODUCTION],
   },
   {
     title: 'statistiques',
@@ -32,11 +32,25 @@ const navConfig = [
     protected: [RoleEnum.SUPER_ADMIN, RoleEnum.ADMIN_PARTENAIRE],
   },
   {
-    title: 'Jeux',
+    title: 'Maison de Production',
+    path: routesName.productionHouse,
+    childrenPath: [routesName.productionHouse],
+    icon: icon('nomine'),
+    protected: [RoleEnum.SUPER_ADMIN, RoleEnum.ADMIN_PARTENAIRE],
+  },
+  {
+    title: 'Films',
     path: routesName.moovies,
     childrenPath: [routesName.moovies],
     icon: icon('manette'),
     protected: [RoleEnum.SUPER_ADMIN],
+  },
+  {
+    title: 'Mes films',
+    path: routesName.moovies,
+    childrenPath: [routesName.moovies],
+    icon: icon('manette'),
+    protected: [RoleEnum.ADMIN_PRODUCTION],
   },
   
   {
@@ -45,19 +59,20 @@ const navConfig = [
     childrenPath: [routesName.formations, routesName.createFormation],
     icon: icon('actuality'),
   },
-  {
-    title: 'Campagnes',
-    path: routesName.campagnes,
-    childrenPath: [routesName.campagnes],
-    icon: icon('actuality'),
-    protected: [RoleEnum.SUPER_ADMIN, RoleEnum.ADMIN_PARTENAIRE],
-  },
-  {
-    title: 'Utilisateurs',
-    path: routesName.users,
-    childrenPath: [routesName.users],
-    icon: icon('sondage'),
-  },
+  // {
+  //   title: 'Campagnes',
+  //   path: routesName.campagnes,
+  //   childrenPath: [routesName.campagnes],
+  //   icon: icon('actuality'),
+  //   protected: [RoleEnum.SUPER_ADMIN, RoleEnum.ADMIN_PARTENAIRE],
+  // },
+  // {
+  //   title: 'Utilisateurs',
+  //   path: routesName.users,
+  //   childrenPath: [routesName.users],
+  //   icon: icon('sondage'),
+  //   protected: [RoleEnum.SUPER_ADMIN],
+  // },
   // {
   //   title: 'Admins',
   //   path: routesName.user,

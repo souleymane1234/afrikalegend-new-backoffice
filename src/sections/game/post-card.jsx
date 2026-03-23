@@ -23,22 +23,27 @@ import Iconify from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
-export default function PostCard({ game, index }) {
+export default function PostCard({ game, onFilmClick }) {
   
   const { title, ratings, id, isActive, categories, poster } = game;
   const router = useRouter();
-  console.log(`....... ${apiUrlAsset.moovies}/${poster}`);
 
+  const handleClick = () => {
+    if (onFilmClick) {
+      onFilmClick(game);
+    } else {
+      router.push(routesName.setDetailFormation(id));
+    }
+  };
 
   const renderTitle = (
     <Link
       color="inherit"
       variant="subtitle2"
       underline="hover"
-      onClick={()=> {
-        router.push(routesName.setDetailFormation(id));
-      }}
+      onClick={(e) => { e.preventDefault(); handleClick(); }}
       sx={{
+        cursor: onFilmClick ? 'pointer' : undefined,
         overflow: 'hidden',
         WebkitLineClamp: 2,
         display: '-webkit-box',
@@ -120,7 +125,7 @@ export default function PostCard({ game, index }) {
   return (
     <Grid size={{xs:12, sm:3, md:2}}>
       <Badge.Ribbon text={isActive ? "En ligne" : "Inactif"} color="purple" >
-      <Card>
+      <Card onClick={onFilmClick ? handleClick : undefined} sx={onFilmClick ? { cursor: 'pointer' } : undefined}>
         <Box
           sx={{
             position: 'relative',
@@ -162,5 +167,5 @@ export default function PostCard({ game, index }) {
 
 PostCard.propTypes = {
   game: PropTypes.object.isRequired,
-  index: PropTypes.number,
+  onFilmClick: PropTypes.func,
 };

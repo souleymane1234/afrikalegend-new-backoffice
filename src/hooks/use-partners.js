@@ -2,18 +2,18 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 
 import ConsumApi from 'src/services_workers/consum_api';
 
-// --- Partie GET des partenaires
-const getPartners = async () => {
+// --- Partie GET des partenaires (optionnel: role pour filtrer, ex. ADMIN_PRODUCTION pour les maisons de production)
+const getPartners = async (role = null) => {
   try {
-    return await ConsumApi.getPartners();
+    return await ConsumApi.getPartners(role);
   } catch (error) {
     throw new Error(error.message);
   }
 };
 
-export const usePartners = () => useQuery({
-  queryKey: ['partners'],
-  queryFn: getPartners,
+export const usePartners = (role = null) => useQuery({
+  queryKey: ['partners', role],
+  queryFn: () => getPartners(role),
   staleTime: 5 * 60 * 1000, // Cache pendant 5 minutes
   retry: 1, // Ne réessaye qu'une seule fois en cas d'erreur
 });

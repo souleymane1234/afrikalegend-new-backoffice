@@ -6,6 +6,7 @@ export const routesName = {
     voting: '/voting',
     jobOffer: '/job-offer',
     partners: '/partners',
+    productionHouse: '/maison-de-production',
     sondages: '/sondages',
     users: '/users',
     events: '/events',

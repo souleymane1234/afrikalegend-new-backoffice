@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
-import { Flex, Image, Space, Table, Upload, message, Checkbox, Dropdown} from 'antd'
+import { useQueryClient } from '@tanstack/react-query';
+import { Flex, Space, Table, Upload, message, Dropdown} from 'antd'
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Grid from '@mui/material/Grid';
 import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
+import Radio from '@mui/material/Radio';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import Select from '@mui/material/Select';
@@ -15,32 +17,33 @@ import MenuItem from '@mui/material/MenuItem';
 import Container from '@mui/material/Container';
 import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
+import FormLabel from '@mui/material/FormLabel';
 import Typography from '@mui/material/Typography';
 import InputLabel from '@mui/material/InputLabel';
+import RadioGroup from '@mui/material/RadioGroup';
+import IconButton from '@mui/material/IconButton';
 import DialogTitle from '@mui/material/DialogTitle';
 import FormControl from '@mui/material/FormControl';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import AutorenewIcon from '@mui/icons-material/Autorenew';
-import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import FormHelperText from '@mui/material/FormHelperText';
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import DialogContentText from '@mui/material/DialogContentText';
 import DeleteTwoToneIcon from '@mui/icons-material/DeleteTwoTone';
-import Radio from '@mui/material/Radio';
-import RadioGroup from '@mui/material/RadioGroup';
-import FormLabel from '@mui/material/FormLabel';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import AddCircleTwoToneIcon from '@mui/icons-material/AddCircleTwoTone';
-import IconButton from '@mui/material/IconButton';
 
 import { useRouter } from 'src/routes/hooks';
 
-import { usemoovies, useCreateGame,useCategoriesmoovies , useCreateCategorymoovies } from 'src/hooks/use-games';
+import { usemoovies, useCreateGame, useUpdateGame, useCategoriesmoovies , useCreateCategorymoovies } from 'src/hooks/use-games';
 
 import { getSrcFromFile, onPreviewCompetitionCover } from 'src/utils/traitement-file';
 
+import { RoleEnum } from 'src/enum/RoleEnum';
 import {apiUrlAsset} from 'src/constants/apiUrl';
+import { useAdminStore } from 'src/store/useAdminStore';
 
 import Iconify from 'src/components/iconify';
 
@@ -71,6 +74,8 @@ function getStyles(name, personName, theme) {
 export default function GameView() {
   const router = useRouter();
   const theme = useTheme();
+  const { admin } = useAdminStore();
+  const canCreateCategory = admin?.role !== RoleEnum.ADMIN_PRODUCTION;
   const [messageApi, contextMessageHolder] = message.useMessage();
   const [fileList, setFileList] = useState([]);
   const [fileListProfil, setFileListProfil] = useState([]);
@@ -80,6 +85,13 @@ export default function GameView() {
   const [base64Files, changeBase64Files] = useState([]);
   const [base64Profil, changeBase64Profil] = useState([]);
   const [openCreateGame, setOpenCreateGame] = useState(false);
+  const [openDetailModal, setOpenDetailModal] = useState(false);
+  const [selectedFilm, setSelectedFilm] = useState(null);
+  const [detailEpisodes, setDetailEpisodes] = useState([]);
+  const [detailTitle, setDetailTitle] = useState('');
+  const [detailDescription, setDetailDescription] = useState('');
+  const [detailTrailler, setDetailTrailler] = useState('');
+  const [detailCategoryIds, setDetailCategoryIds] = useState([]);
   const [title, changeTitle] = useState('');
   const [nameCategory, changeNameCategory] = useState('');
   const [trailler, changeTrailler] = useState('');
@@ -87,9 +99,11 @@ export default function GameView() {
   const [description, changeDescription] = useState('');
   const [episodes, changeEpisodes] = useState([]);
   const { data: categories, isLoading:isLoadingCategory, isError: isErrorCategoryGame, error: errorCategoryGame, refetch: refetchCategoryGame} = useCategoriesmoovies();
+  const queryClient = useQueryClient();
   const { data: moovies, isLoading:isLoadingGame, isError: isErrorGame, error: errorGame, refetch: refetchGame} = usemoovies();
   
   const { mutate: createGameMutation, isLoading: isCreatingGame } = useCreateGame();
+  const { mutate: updateGameMutation, isLoading: isUpdatingGame } = useUpdateGame();
   const { mutate: createCategoryGameMutation, isLoading: isCreatingCategory } = useCreateCategorymoovies();
 
   useEffect(() => {
@@ -98,6 +112,71 @@ export default function GameView() {
 
   const handleToogleDialogCreatemoovies = () => {
     setOpenCreateGame((prev) => !prev);
+  };
+
+  const openFilmDetail = (game) => {
+    setSelectedFilm(game);
+    const eps = (game.episodes && Array.isArray(game.episodes))
+      ? game.episodes.map((e) => ({
+          id: e.id,
+          moovie_id: e.moovie_id ?? null,
+          url: e.url || '',
+          isPublic: e.isPublic ?? false,
+        }))
+      : [];
+    setDetailEpisodes(eps);
+    setDetailTitle(game.title || '');
+    setDetailDescription(game.description || '');
+    setDetailTrailler(game.trailler || '');
+    setDetailCategoryIds((game.categories && Array.isArray(game.categories)) ? game.categories.map((c) => c.id).filter(Boolean) : []);
+    setOpenDetailModal(true);
+  };
+
+  const closeFilmDetail = () => {
+    setOpenDetailModal(false);
+    setSelectedFilm(null);
+    setDetailEpisodes([]);
+    setDetailTitle('');
+    setDetailDescription('');
+    setDetailTrailler('');
+    setDetailCategoryIds([]);
+  };
+
+  const saveFilmDetail = () => {
+    if (!selectedFilm?.id) return;
+    messageApi.loading('Enregistrement...');
+    // Body conforme à l'API PUT : on envoie toujours title et description (valeurs du formulaire) pour que la mise à jour soit bien prise en compte
+    const eps = detailEpisodes.map((e) => {
+      const ep = {
+        moovie_id: e.moovie_id || '',
+        url: (e.url || '').trim(),
+        isPublic: Boolean(e.isPublic),
+      };
+      if (e.id) ep.episode_id = e.id;
+      return ep;
+    });
+    const body = {
+      title: detailTitle.trim(),
+      description: detailDescription.trim(),
+      categories: detailCategoryIds.filter(Boolean),
+      episodes: eps,
+    };
+    updateGameMutation(
+      { id: selectedFilm.id, ...body },
+      {
+        onSuccess: async () => {
+          closeFilmDetail();
+          queryClient.invalidateQueries({ queryKey: ['moovies'] });
+          await refetchGame();
+          messageApi.destroy();
+          messageApi.success('Film mis à jour avec succès.');
+        },
+        onError: (e) => {
+          messageApi.destroy();
+          messageApi.error(e.message);
+        },
+      }
+    );
   };
 
   const columns = [
@@ -280,26 +359,27 @@ export default function GameView() {
   }
 
   if (isErrorGame) {
-    console.error("Erreur lors de la récupération des jeux :", errorGame.message);
+    console.error("Erreur lors de la récupération des film :", errorGame.message);
   }
 
   if (isErrorCategoryGame) {
-    console.error("Erreur lors de la récupération des catégories jeux :", errorCategoryGame.message);
+    console.error("Erreur lors de la récupération des catégories film :", errorCategoryGame.message);
   }
 
   return (
     <Container maxWidth='xl'>
       {contextMessageHolder}
+      {canCreateCategory && (
       <Box sx={{width: '100%'}}>
-        <Typography variant="h4">Gestions Cartegorie Jeux</Typography>
-        <Typography variant="subtitle1">Créer une nouvelle cartegorie de jeux</Typography>
+        <Typography variant="h4">Gestions Cartegorie Films</Typography>
+        <Typography variant="subtitle1">Créer une nouvelle cartegorie de film</Typography>
         <Grid container spacing={3} sx={{ my: 2 }} >
           <Grid size={{ xs: 6, sm: 4, md: 3 }}>
             <TextField
                       value={nameCategory}
                       onChange={(event) => changeNameCategory(event.target.value)}
                       fullWidth
-                    label="Nom de la categorie du jeu"
+                    label="Nom de la categorie du film"
                     required
                     name="nameCategory" />
           </Grid>
@@ -322,8 +402,9 @@ export default function GameView() {
             </Grid>
         </Grid>
       </Box>
+      )}
       <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
-        <Typography variant="h4">Gestions Jeux</Typography>
+        <Typography variant="h4">Gestions Films</Typography>
 
         <Button variant="contained" color="inherit" startIcon={<Iconify icon="eva:plus-fill" />}
         onClick={handleToogleDialogCreatemoovies}
@@ -344,30 +425,27 @@ export default function GameView() {
       </Stack> */}
 
       <Grid container spacing={3}>
-        {
-        isLoadingGame ?
-        (Array.from(new Array(9))).map((item, index) => (
+        {isLoadingGame && (Array.from(new Array(9))).map((item, index) => (
           <Grid key={`skeleton-${index}`} size={{xs: 12, sm: 4, md: 3}}>
             <Card sx={{width: '100%', height: 400, marginBottom: 2}} >
               <Skeleton variant="rectangular" width="100%" height="100%" animation="pulse" />
             </Card>
           </Grid>
-        ))
-        :
-        isErrorGame ? (
+        ))}
+        {!isLoadingGame && isErrorGame && (
           <Grid size={{xs: 12}}>
             <Box sx={{width: '100%', textAlign: 'center', mt: 5}}>
               <Typography variant="h5" color="error">
-                Erreur lors du chargement des jeux
+                Erreur lors du chargement des film
               </Typography>
               <Typography variant="body1" sx={{mt: 2}}>
                 {errorGame?.message || "Une erreur s'est produite"}
               </Typography>
             </Box>
           </Grid>
-        ) : (
-          (moovies && Array.isArray(moovies) && moovies.length > 0) ? moovies.map((game, index) => (
-            <PostCard key={game.id} game={game} index={index} />
+        )}
+        {!isLoadingGame && !isErrorGame && ((moovies && Array.isArray(moovies) && moovies.length > 0) ? moovies.map((game) => (
+            <PostCard key={game.id} game={game} onFilmClick={openFilmDetail} />
           )) : (
             <Grid size={{xs: 12}}>
               <Box sx={{width: '100%', textAlign: 'center', mt: 5}}>
@@ -376,9 +454,7 @@ export default function GameView() {
                 </Typography>
               </Box>
             </Grid>
-          )
-        )
-        }
+          ))}
       </Grid>
       <Dialog maxWidth="xl" fullWidth disableEscapeKeyDown open={openCreateGame} onClose={handleToogleDialogCreatemoovies}>
             <DialogTitle>
@@ -604,6 +680,134 @@ export default function GameView() {
               <Button variant="contained" onClick={createmoovies} disabled={isCreatingGame} startIcon={isCreatingGame && <AutorenewIcon />} >{isCreatingGame ? "Enregistrement": 'Enregistrer'}</Button>
             </DialogActions>
           </Dialog>
+
+      {/* Modal détail film + édition (tout sauf prix et photo) */}
+      <Dialog maxWidth="md" fullWidth open={openDetailModal} onClose={closeFilmDetail}>
+        <DialogTitle>Détails du film</DialogTitle>
+        <DialogContent>
+          {selectedFilm && (
+            <Grid container spacing={2} sx={{ mt: 0 }}>
+              <Grid size={{ xs: 12, sm: 4, md: 3 }}>
+                {selectedFilm.poster && (
+                  <>
+                    <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 0.5 }}>Photo (non modifiable)</Typography>
+                    <Box
+                      component="img"
+                      alt={selectedFilm.title}
+                      src={`${apiUrlAsset.moovies}/${selectedFilm.poster}`}
+                      sx={{ width: '100%', borderRadius: 1, objectFit: 'cover' }}
+                    />
+                  </>
+                )}
+              </Grid>
+              <Grid size={{ xs: 12, sm: 8, md: 9 }}>
+                <TextField
+                  fullWidth
+                  label="Titre"
+                  value={detailTitle}
+                  onChange={(e) => setDetailTitle(e.target.value)}
+                  sx={{ mb: 1.5 }}
+                />
+                <TextField
+                  fullWidth
+                  multiline
+                  rows={3}
+                  label="Description"
+                  value={detailDescription}
+                  onChange={(e) => setDetailDescription(e.target.value)}
+                  sx={{ mb: 1.5 }}
+                />
+                <TextField
+                  fullWidth
+                  label="Trailer (URL)"
+                  value={detailTrailler}
+                  onChange={(e) => setDetailTrailler(e.target.value)}
+                  placeholder="https://..."
+                  sx={{ mb: 1.5 }}
+                />
+                {!isLoadingCategory && (
+                  <FormControl fullWidth sx={{ mb: 1.5 }}>
+                    <InputLabel id="detail-categories-label">Catégories</InputLabel>
+                    <Select
+                      labelId="detail-categories-label"
+                      multiple
+                      value={detailCategoryIds}
+                      onChange={(e) => setDetailCategoryIds(e.target.value)}
+                      input={<OutlinedInput label="Catégories" />}
+                      renderValue={(ids) => (
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                          {ids.map((id) => {
+                            const cat = (categories || []).find((c) => c.id === id);
+                            return <Chip key={id} label={cat?.title || cat?.name || id} size="small" />;
+                          })}
+                        </Box>
+                      )}
+                      MenuProps={MenuProps}
+                    >
+                      {(categories && Array.isArray(categories)) ? categories.map((cat) => (
+                        <MenuItem key={cat.id} value={cat.id}>
+                          {cat.title || cat.name}
+                        </MenuItem>
+                      )) : null}
+                    </Select>
+                  </FormControl>
+                )}
+                <Typography variant="body2" color="text.secondary">
+                  Prix / épisode : {selectedFilm.priceEpisode != null ? `${selectedFilm.priceEpisode} FCFA` : '-'} (non modifiable)
+                </Typography>
+              </Grid>
+              <Grid size={{ xs: 12 }}>
+                <DialogContentText sx={{ mt: 2, mb: 1 }}>Épisodes</DialogContentText>
+                {detailEpisodes.map((episode, index) => (
+                  <Grid container spacing={2} alignItems="center" sx={{ mb: 1 }} key={`detail-ep-${index}`}>
+                    <Grid size={{ xs: 12, sm: 8, md: 9 }}>
+                      <TextField
+                        value={episode.url || ''}
+                        onChange={(e) => setDetailEpisodes((prev) => prev.map((ep, i) => (i === index ? { ...ep, url: e.target.value } : ep)))}
+                        fullWidth
+                        size="small"
+                        label="URL de l'épisode"
+                        placeholder="https://..."
+                      />
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 2, md: 2 }}>
+                      <FormLabel>Public</FormLabel>
+                      <RadioGroup
+                        row
+                        value={episode.isPublic ? 'oui' : 'non'}
+                        onChange={(e) => setDetailEpisodes((prev) => prev.map((ep, i) => (i === index ? { ...ep, isPublic: e.target.value === 'oui' } : ep)))}
+                      >
+                        <FormControlLabel value="oui" control={<Radio size="small" />} label="Oui" />
+                        <FormControlLabel value="non" control={<Radio size="small" />} label="Non" />
+                      </RadioGroup>
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 1, md: 1 }}>
+                      <IconButton color="error" size="small" onClick={() => setDetailEpisodes((prev) => prev.filter((_, i) => i !== index))}>
+                        <DeleteTwoToneIcon />
+                      </IconButton>
+                    </Grid>
+                  </Grid>
+                ))}
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<AddCircleTwoToneIcon />}
+                  onClick={() => setDetailEpisodes((prev) => [...prev, { moovie_id: null, url: '', isPublic: false }])}
+                  sx={{ mt: 1 }}
+                >
+                  Ajouter un épisode
+                </Button>
+              </Grid>
+            </Grid>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeFilmDetail}>Fermer</Button>
+          <Button variant="contained" onClick={saveFilmDetail} disabled={isUpdatingGame} startIcon={isUpdatingGame && <AutorenewIcon />}>
+            {isUpdatingGame ? 'Enregistrement...' : 'Enregistrer'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 }
